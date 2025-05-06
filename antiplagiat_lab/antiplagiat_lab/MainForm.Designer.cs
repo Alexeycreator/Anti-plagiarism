@@ -670,6 +670,7 @@
       this.numUD_NumberLab.Name = "numUD_NumberLab";
       this.numUD_NumberLab.Size = new System.Drawing.Size(240, 34);
       this.numUD_NumberLab.TabIndex = 8;
+      this.numUD_NumberLab.ValueChanged += new System.EventHandler(this.numUD_NumberLab_ValueChanged);
       // 
       // MainForm
       // 

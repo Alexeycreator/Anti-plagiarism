@@ -118,7 +118,7 @@ namespace antiplagiat_lab
       UpdateStudentList();
       comboBox_Student.SelectedItem = null;
       comboBox_currentReport.SelectedItem = null;
-      
+      comboBox_Student.Enabled = true;
     }
 
     private void FilesReport_Click(object sender, EventArgs e)
@@ -390,6 +390,8 @@ namespace antiplagiat_lab
     {
       UpdateReportList();
       comboBox_currentReport.SelectedItem = null;
+      numUD_NumberLab.Enabled = true;
+      SetNumericUpDownEnabled(true);
     }
 
 
@@ -465,40 +467,98 @@ namespace antiplagiat_lab
 
     private void MainForm_Load(object sender, EventArgs e)
     {
+      SettingsForm();
+    }
+
+    private void SettingsForm()
+    {
+      panel_newPeport.Click -= FilesReport_Click;
+      label_Filesreport.Click -= FilesReport_Click;
+      panel_addCode.Click -= addCode_Click;
+      label_filesCode.Click -= addCode_Click;
+      comboBox_Student.Enabled = false;
+      numUD_NumberLab.Enabled = false;
       numUD_NumberLab.Value = 1;
       numUD_NumberLab.Maximum = 15;
       numUD_NumberLab.ReadOnly = true;
       numUD_NumberLab.TextAlign = HorizontalAlignment.Center;
-      label_filesCode.Enabled = false;
-      label_Filesreport.Enabled = false;
     }
 
     private void CheckNumberLabs()
     {
       try
       {
+        if (!numUD_NumberLab.Enabled)
+        {
+          ResetLabelsState();
+          return;
+        }
         if (numUD_NumberLab.Value == 0)
         {
-          throw new FormatException($"Выберите номер лабораторной работы, л/р с номером 0 не может существовать.");
+          numUD_NumberLab.Value = 1;
+          throw new FormatException($"Лабораторная работа с номером 0 не может существовать.");
         }
-        if(numUD_NumberLab.Value == null)
+        else if (numUD_NumberLab.Value >= 1 && numUD_NumberLab.Enabled)
         {
-          throw new FormatException($"Лабораторная работа не выбрана, выберите номер работы.");
-        }
-        else
-        {
-          label_Filesreport.Enabled = true;
-          label_filesCode.Enabled = true;
+          ActivateLabelsState();
         }
       }
       catch (FormatException fex)
       {
         MessageBox.Show($"{fex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        CheckErrorNumeric();
       }
       catch (Exception ex)
       {
+        
         MessageBox.Show($"{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        CheckErrorNumeric();
       }
+    }
+
+    private void ResetLabelsState()
+    {
+      label_Filesreport.Click -= FilesReport_Click;
+      label_Filesreport.Visible = false;
+      label_Filesreport.Enabled = false;
+      label_filesCode.Click -= addCode_Click;
+      label_filesCode.Visible = false;
+      label_filesCode.Enabled = false;
+    }
+
+    private void ActivateLabelsState()
+    {
+      label_Filesreport.Click -= FilesReport_Click;
+      label_Filesreport.Click += FilesReport_Click;
+      label_Filesreport.Visible = true;
+      label_Filesreport.Enabled = true;
+      label_filesCode.Click -= addCode_Click;
+      label_filesCode.Click += addCode_Click;
+      label_filesCode.Visible = true;
+      label_filesCode.Enabled = true;
+    }
+
+    private void CheckErrorNumeric()
+    {
+      if (numUD_NumberLab.Enabled && numUD_NumberLab.Value >= 1)
+      {
+        ActivateLabelsState();
+      }
+      else
+      {
+        ResetLabelsState();
+      }
+    }
+
+    private void SetNumericUpDownEnabled(bool isEnabled)
+    {
+      numUD_NumberLab.Enabled = isEnabled;
+      CheckNumberLabs();
+    }
+
+    private void numUD_NumberLab_ValueChanged(object sender, EventArgs e)
+    {
+      CheckNumberLabs();
     }
   }
 
