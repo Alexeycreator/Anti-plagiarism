@@ -118,6 +118,7 @@ namespace antiplagiat_lab
       UpdateStudentList();
       comboBox_Student.SelectedItem = null;
       comboBox_currentReport.SelectedItem = null;
+      
     }
 
     private void FilesReport_Click(object sender, EventArgs e)
@@ -468,6 +469,36 @@ namespace antiplagiat_lab
       numUD_NumberLab.Maximum = 15;
       numUD_NumberLab.ReadOnly = true;
       numUD_NumberLab.TextAlign = HorizontalAlignment.Center;
+      label_filesCode.Enabled = false;
+      label_Filesreport.Enabled = false;
+    }
+
+    private void CheckNumberLabs()
+    {
+      try
+      {
+        if (numUD_NumberLab.Value == 0)
+        {
+          throw new FormatException($"Выберите номер лабораторной работы, л/р с номером 0 не может существовать.");
+        }
+        if(numUD_NumberLab.Value == null)
+        {
+          throw new FormatException($"Лабораторная работа не выбрана, выберите номер работы.");
+        }
+        else
+        {
+          label_Filesreport.Enabled = true;
+          label_filesCode.Enabled = true;
+        }
+      }
+      catch (FormatException fex)
+      {
+        MessageBox.Show($"{fex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show($"{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
     }
   }
 
