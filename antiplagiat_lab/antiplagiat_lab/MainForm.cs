@@ -121,78 +121,87 @@ namespace antiplagiat_lab
       comboBox_Student.Enabled = true;
     }
 
-    private void FilesReport_Click(object sender, EventArgs e)
-    {
-      if (comboBox_Group.SelectedItem != null && comboBox_Student.SelectedItem != null)
-      {
-        using (OpenFileDialog openFileDialog = new OpenFileDialog())
+        private void FilesReport_Click(object sender, EventArgs e)
         {
-          if (openFileDialog.ShowDialog() == DialogResult.OK)
-          {
-            string groupName = comboBox_Group.SelectedItem.ToString();
-            string studentName = comboBox_Student.SelectedItem.ToString();
-            var group = groups.FirstOrDefault(g => g.Name == groupName);
-            var student = group?.Students.FirstOrDefault(s => s.Name == studentName);
-
-            if (group != null && student != null)
+            if (comboBox_Group.SelectedItem != null && comboBox_Student.SelectedItem != null)
             {
-              string destPath = Path.Combine(ReportsDirectory, groupName, studentName);
-              Directory.CreateDirectory(destPath);
-              string destFile = Path.Combine(Environment.CurrentDirectory, destPath, Path.GetFileName(openFileDialog.FileName));
-
-              bool fileExists = student.Reports.Any(r => r.FileName == Path.GetFileName(openFileDialog.FileName));
-
-              if (fileExists)
-              {
-                var existingReport = student.Reports.First(r => r.FileName == Path.GetFileName(openFileDialog.FileName));
-
-                var dialogResult = MessageBox.Show(
-                    $"Отчет с таким названием уже существует.\n\n" +
-                    $"Текущий файл: {existingReport.FileName}\n" +
-                    $"Размер: {existingReport.SymbolCount} символов, {existingReport.WordCount} слов\n" +
-                    $"Хотите заменить его новым файлом?\n\n" +
-                    $"Новый файл: {Path.GetFileName(openFileDialog.FileName)}",
-                    "Заменить файл?",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question
-                );
-
-                if (dialogResult == DialogResult.Yes)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                  student.Reports.Remove(existingReport);
-                  File.Copy(openFileDialog.FileName, destFile, true);
-                  var newReportData = AnalyzeReport(destFile);
-                  student.Reports.Add(newReportData);
+                    openFileDialog.Multiselect = true; // Включаем множественный выбор файлов
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string groupName = comboBox_Group.SelectedItem.ToString();
+                        string studentName = comboBox_Student.SelectedItem.ToString();
+                        var group = groups.FirstOrDefault(g => g.Name == groupName);
+                        var student = group?.Students.FirstOrDefault(s => s.Name == studentName);
 
-                  SaveData();
-                  FillDataGridView(newReportData.AsciiSum, destFile);
-                }
-              }
-              else
-              {
-                File.Copy(openFileDialog.FileName, destFile, true);
-                var newReportData = AnalyzeReport(destFile);
-                student.Reports.Add(newReportData);
+                        if (group != null && student != null)
+                        {
+                            string destPath = Path.Combine(ReportsDirectory, groupName, studentName);
+                            Directory.CreateDirectory(destPath);
 
-                SaveData();
-                comboBox_currentReport.Items.Clear();
-                foreach (var report in student.Reports)
-                {
-                  comboBox_currentReport.Items.Add(report.FileName);
+                            // Очищаем комбобокс перед добавлением новых отчетов
+                            comboBox_currentReport.Items.Clear();
+
+                            // Обрабатываем все выбранные файлы
+                            foreach (string filePath in openFileDialog.FileNames)
+                            {
+                                string destFile = Path.Combine(Environment.CurrentDirectory, destPath, Path.GetFileName(filePath));
+                                bool fileExists = student.Reports.Any(r => r.FileName == Path.GetFileName(filePath));
+
+                                if (fileExists)
+                                {
+                                    var existingReport = student.Reports.First(r => r.FileName == Path.GetFileName(filePath));
+
+                                    var dialogResult = MessageBox.Show(
+                                        $"Отчет с таким названием уже существует.\n\n" +
+                                        $"Текущий файл: {existingReport.FileName}\n" +
+                                        $"Размер: {existingReport.SymbolCount} символов, {existingReport.WordCount} слов\n" +
+                                        $"Хотите заменить его новым файлом?\n\n" +
+                                        $"Новый файл: {Path.GetFileName(filePath)}",
+                                        "Заменить файл?",
+                                        MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question
+                                    );
+
+                                    if (dialogResult == DialogResult.Yes)
+                                    {
+                                        student.Reports.Remove(existingReport);
+                                        File.Copy(filePath, destFile, true);
+                                        var newReportData = AnalyzeReport(destFile);
+                                        student.Reports.Add(newReportData);
+                                        comboBox_currentReport.Items.Add(newReportData.FileName);
+                                    }
+                                }
+                                else
+                                {
+                                    File.Copy(filePath, destFile, true);
+                                    var newReportData = AnalyzeReport(destFile);
+                                    student.Reports.Add(newReportData);
+                                    comboBox_currentReport.Items.Add(newReportData.FileName);
+                                }
+                            }
+
+                            // Сохраняем данные после обработки всех файлов
+                            SaveData();
+
+                            // Выбираем последний добавленный отчет
+                            if (comboBox_currentReport.Items.Count > 0)
+                            {
+                                comboBox_currentReport.SelectedIndex = comboBox_currentReport.Items.Count - 1;
+                            }
+                        }
+                    }
                 }
-                comboBox_currentReport.SelectedItem = newReportData.FileName;
-              }
             }
-          }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите группу и студента.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
-      }
-      else
-      {
-        MessageBox.Show("Пожалуйста, выберите группу и студента.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-      }
-    }
 
-    private ReportData AnalyzeReport(string filePath)
+
+        private ReportData AnalyzeReport(string filePath)
     {
       if (!File.Exists(filePath) || Path.GetExtension(filePath) != ".docx")
       {
