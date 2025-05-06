@@ -11,6 +11,7 @@ namespace antiplagiat_lab
 {
     public partial class MainForm : Form
     {
+    //sasad
         private const string DataFilePath = "data.json";
         private const string ReportsDirectory = "Отчёты";
         private List<Group> groups = new List<Group>();
