@@ -459,7 +459,16 @@ namespace antiplagiat_lab
           File.Delete(filePath);
           throw new FileNotFoundException("Файл не найден.");
         }
-        if (Path.GetExtension(filePath) != ".docx" || Path.GetExtension(filePath) != ".doc")
+        if(Path.GetExtension(filePath) == ".doc" ||  Path.GetExtension(filePath) == ".docx")
+        {
+          MessageBox.Show($"Формат файла выбран верно");
+        }
+        else if (Path.GetExtension(filePath) != ".docx")
+        {
+          File.Delete(filePath);
+          throw new ArgumentException("Поддерживаются только форматы .doc или .docx");
+        }
+        else if (Path.GetExtension(filePath) != ".doc")
         {
           File.Delete(filePath);
           throw new ArgumentException("Поддерживаются только форматы .doc или .docx");
