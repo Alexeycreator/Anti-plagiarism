@@ -14,7 +14,7 @@ namespace antiplagiat_lab
             InitializeComponent();
             this.groups = groups;
         }
-
+        #region Btn
         private void buttonAddStudent_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(textBox_NewStudent.Text))
@@ -69,5 +69,6 @@ namespace antiplagiat_lab
         {
             this.Close();
         }
+        #endregion
     }
 }

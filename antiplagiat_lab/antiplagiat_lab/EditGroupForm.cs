@@ -9,6 +9,7 @@ namespace antiplagiat_lab
     {
         private List<Group> groups;
 
+        #region Functions
         public EditGroupForm(List<Group> groups)
         {
             InitializeComponent();
@@ -24,7 +25,9 @@ namespace antiplagiat_lab
                 comboBox_Groups.Items.Add(group.Name);
             }
         }
+        #endregion
 
+        #region Button
         private void comboBoxGroups_SelectedIndexChanged(object sender, EventArgs e)
         {
             listBox_Students.Items.Clear();
@@ -96,5 +99,6 @@ namespace antiplagiat_lab
         {
             this.Close();
         }
+        #endregion
     }
 }

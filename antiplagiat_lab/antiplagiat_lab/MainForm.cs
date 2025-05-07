@@ -21,48 +21,8 @@ namespace antiplagiat_lab
       InitializeApp();
     }
 
-    private void InitializeApp()
-    {
-      if (!File.Exists(DataFilePath))
-      {
-        File.WriteAllText(DataFilePath, "[]");
-      }
-
-      if (!Directory.Exists(ReportsDirectory))
-      {
-        Directory.CreateDirectory(ReportsDirectory);
-      }
-
-      progressBar.Visible = false;
-      LoadData();
-      FillComboBoxes();
-    }
-
-    private void LoadData()
-    {
-      string jsonData = File.ReadAllText(DataFilePath);
-      if (!string.IsNullOrWhiteSpace(jsonData))
-      {
-        groups = JsonSerializer.Deserialize<List<Group>>(jsonData) ?? new List<Group>();
-      }
-    }
-
-    private void SaveData()
-    {
-      string jsonData = JsonSerializer.Serialize(groups);
-      File.WriteAllText(DataFilePath, jsonData);
-    }
-
-    private void FillComboBoxes()
-    {
-      comboBox_Group.Items.Clear();
-      foreach (var group in groups)
-      {
-        comboBox_Group.Items.Add(group.Name);
-      }
-    }
-
-    private void ToolStripMenuItem_addGroup_Click(object sender, EventArgs e)
+#region actions_Btn
+        private void ToolStripMenuItem_addGroup_Click(object sender, EventArgs e)
     {
       using (var addGroupForm = new AddGroupForm(groups))
       {
@@ -200,7 +160,175 @@ namespace antiplagiat_lab
             }
         }
 
+        private void addCode_Click(object sender, EventArgs e)
+        {
+            if (comboBox_Group.SelectedItem == null || comboBox_Student.SelectedItem == null || comboBox_currentReport.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите группу, студента и отчет для добавления кода.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
+            string selectedGroup = comboBox_Group.SelectedItem.ToString();
+            string selectedStudent = comboBox_Student.SelectedItem.ToString();
+            string selectedReport = comboBox_currentReport.SelectedItem.ToString();
+
+            var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
+            var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
+            var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
+
+            if (report == null)
+            {
+                MessageBox.Show("Выбранный отчет не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (report.CodeInfo != null)
+                    {
+                        var dialogResult = MessageBox.Show(
+                            "К отчету уже привязан код. Хотите заменить его новым?",
+                            "Код уже существует",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question
+                        );
+
+                        if (dialogResult == DialogResult.No)
+                        {
+                            return;
+                        }
+                    }
+
+                    string code = File.ReadAllText(openFileDialog.FileName);
+                    report.CodeInfo = AnalyzeCode(code);
+
+                    SaveData();
+                    DisplayCodeInfo(report.CodeInfo);
+                }
+            }
+        }
+
+
+
+        private void button_Open_Click(object sender, EventArgs e)
+        {
+            if (dataGridView_Coincidence.SelectedRows.Count > 0)
+            {
+                string filePath = dataGridView_Coincidence.SelectedRows[0].Cells[5].Value.ToString();
+                if (File.Exists(filePath))
+                {
+                    System.Diagnostics.Process.Start(filePath);
+                }
+                else
+                {
+                    MessageBox.Show("Файл не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void comboBox_Student_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateReportList();
+            comboBox_currentReport.SelectedItem = null;
+            numUD_NumberLab.Enabled = true;
+            SetNumericUpDownEnabled(true);
+        }
+
+
+        private void comboBox_currentReport_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_currentReport.SelectedItem == null)
+            {
+                label_CountWords.Text = "       ";
+                label_CountSymbol.Text = "       ";
+                label_SummASCII.Text = "       ";
+                dataGridView_Coincidence.Rows.Clear();
+                DisplayCodeInfo(null);
+                return;
+            }
+
+            var selectedGroup = comboBox_Group.SelectedItem?.ToString();
+            var selectedStudent = comboBox_Student.SelectedItem?.ToString();
+            var selectedReport = comboBox_currentReport.SelectedItem?.ToString();
+
+            if (selectedGroup == null || selectedStudent == null || selectedReport == null)
+            {
+                return;
+            }
+
+            var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
+            var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
+            var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
+
+            if (report != null)
+            {
+                label_CountWords.Text = $"{report.WordCount}";
+                label_CountSymbol.Text = $"{report.SymbolCount}";
+                label_SummASCII.Text = $"{report.AsciiSum}";
+                DisplayCodeInfo(report.CodeInfo);
+                FillDataGridView(report.AsciiSum, report.FilePath);
+            }
+        }
+
+
+        private void SetNumericUpDownEnabled(bool isEnabled)
+        {
+            numUD_NumberLab.Enabled = isEnabled;
+            CheckNumberLabs();
+        }
+
+        private void numUD_NumberLab_ValueChanged(object sender, EventArgs e)
+        {
+            CheckNumberLabs();
+        }
+
+        #endregion
+
+#region Functions
+
+        private void InitializeApp()
+        {
+            if (!File.Exists(DataFilePath))
+            {
+                File.WriteAllText(DataFilePath, "[]");
+            }
+
+            if (!Directory.Exists(ReportsDirectory))
+            {
+                Directory.CreateDirectory(ReportsDirectory);
+            }
+
+            progressBar.Visible = false;
+            LoadData();
+            FillComboBoxes();
+        }
+
+        private void LoadData()
+        {
+            string jsonData = File.ReadAllText(DataFilePath);
+            if (!string.IsNullOrWhiteSpace(jsonData))
+            {
+                groups = JsonSerializer.Deserialize<List<Group>>(jsonData) ?? new List<Group>();
+            }
+        }
+
+        private void SaveData()
+        {
+            string jsonData = JsonSerializer.Serialize(groups);
+            File.WriteAllText(DataFilePath, jsonData);
+        }
+
+        private void FillComboBoxes()
+        {
+            comboBox_Group.Items.Clear();
+            foreach (var group in groups)
+            {
+                comboBox_Group.Items.Add(group.Name);
+            }
+        }
         private ReportData AnalyzeReport(string filePath)
     {
       if (!File.Exists(filePath) || Path.GetExtension(filePath) != ".docx")
@@ -263,315 +391,198 @@ namespace antiplagiat_lab
         wordApp.Quit(false);
       }
     }
-    private void addCode_Click(object sender, EventArgs e)
-    {
-      if (comboBox_Group.SelectedItem == null || comboBox_Student.SelectedItem == null || comboBox_currentReport.SelectedItem == null)
-      {
-        MessageBox.Show("Выберите группу, студента и отчет для добавления кода.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        return;
-      }
 
-      string selectedGroup = comboBox_Group.SelectedItem.ToString();
-      string selectedStudent = comboBox_Student.SelectedItem.ToString();
-      string selectedReport = comboBox_currentReport.SelectedItem.ToString();
-
-      var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
-      var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
-      var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
-
-      if (report == null)
-      {
-        MessageBox.Show("Выбранный отчет не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        return;
-      }
-
-      using (OpenFileDialog openFileDialog = new OpenFileDialog())
-      {
-        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        private CodeAnalysis AnalyzeCode(string code)
         {
-          if (report.CodeInfo != null)
-          {
-            var dialogResult = MessageBox.Show(
-                "К отчету уже привязан код. Хотите заменить его новым?",
-                "Код уже существует",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (dialogResult == DialogResult.No)
+            return new CodeAnalysis
             {
-              return;
-            }
-          }
-
-          string code = File.ReadAllText(openFileDialog.FileName);
-          report.CodeInfo = AnalyzeCode(code);
-
-          SaveData();
-          DisplayCodeInfo(report.CodeInfo);
+                CountFor = CountOccurrences(code, @"\bfor\b"),
+                CountWhile = CountOccurrences(code, @"\bwhile\b"),
+                CountIf = CountOccurrences(code, @"\bif\b"),
+                CountElse = CountOccurrences(code, @"\belse\b")
+            };
         }
-      }
-    }
 
-    private CodeAnalysis AnalyzeCode(string code)
-    {
-      return new CodeAnalysis
-      {
-        CountFor = CountOccurrences(code, @"\bfor\b"),
-        CountWhile = CountOccurrences(code, @"\bwhile\b"),
-        CountIf = CountOccurrences(code, @"\bif\b"),
-        CountElse = CountOccurrences(code, @"\belse\b")
-      };
-    }
-
-    private void DisplayCodeInfo(CodeAnalysis codeInfo)
-    {
-      if (codeInfo == null)
-      {
-        label_countFOR.Text = "       ";
-        label_countWHILE.Text = "       ";
-        label_countIF.Text = "       ";
-        label_countELSE.Text = "       ";
-      }
-      else
-      {
-        label_countFOR.Text = $"{codeInfo.CountFor}";
-        label_countWHILE.Text = $"{codeInfo.CountWhile}";
-        label_countIF.Text = $"{codeInfo.CountIf}";
-        label_countELSE.Text = $"{codeInfo.CountElse}";
-      }
-    }
-
-    private int CountOccurrences(string text, string pattern)
-    {
-      return System.Text.RegularExpressions.Regex.Matches(text, pattern).Count;
-    }
-
-    private void FillDataGridView(long currentAsciiSum, string currentFilePath)
-    {
-      dataGridView_Coincidence.Rows.Clear();
-
-      foreach (var group in groups)
-      {
-        foreach (var student in group.Students)
+        private void DisplayCodeInfo(CodeAnalysis codeInfo)
         {
-          foreach (var report in student.Reports)
-          {
-            if (report.FilePath == currentFilePath)
-              continue;
-            double similarityPercentage = CalculateSimilarityPercentage(currentAsciiSum, report.AsciiSum);
-
-            if (similarityPercentage <= 25)
+            if (codeInfo == null)
             {
-              dataGridView_Coincidence.Rows.Add(student.Name, group.Name, report.AsciiSum, Math.Round(100 - similarityPercentage, 2), report.FileName, report.FilePath, similarityPercentage.ToString("F2"));
+                label_countFOR.Text = "       ";
+                label_countWHILE.Text = "       ";
+                label_countIF.Text = "       ";
+                label_countELSE.Text = "       ";
             }
-          }
+            else
+            {
+                label_countFOR.Text = $"{codeInfo.CountFor}";
+                label_countWHILE.Text = $"{codeInfo.CountWhile}";
+                label_countIF.Text = $"{codeInfo.CountIf}";
+                label_countELSE.Text = $"{codeInfo.CountElse}";
+            }
         }
-      }
-    }
 
-    private double CalculateSimilarityPercentage(long currentAsciiSum, long reportAsciiSum)
-    {
-      double maxAsciiSum = Math.Max(currentAsciiSum, reportAsciiSum);
-      double percentage = (Math.Abs(currentAsciiSum - reportAsciiSum) / maxAsciiSum) * 100;
-
-      return percentage;
-    }
-
-    private void button_Open_Click(object sender, EventArgs e)
-    {
-      if (dataGridView_Coincidence.SelectedRows.Count > 0)
-      {
-        string filePath = dataGridView_Coincidence.SelectedRows[0].Cells[5].Value.ToString();
-        if (File.Exists(filePath))
+        private int CountOccurrences(string text, string pattern)
         {
-          System.Diagnostics.Process.Start(filePath);
+            return System.Text.RegularExpressions.Regex.Matches(text, pattern).Count;
         }
-        else
+
+        private void FillDataGridView(long currentAsciiSum, string currentFilePath)
         {
-          MessageBox.Show("Файл не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            dataGridView_Coincidence.Rows.Clear();
+
+            foreach (var group in groups)
+            {
+                foreach (var student in group.Students)
+                {
+                    foreach (var report in student.Reports)
+                    {
+                        if (report.FilePath == currentFilePath)
+                            continue;
+                        double similarityPercentage = CalculateSimilarityPercentage(currentAsciiSum, report.AsciiSum);
+
+                        if (similarityPercentage <= 25)
+                        {
+                            dataGridView_Coincidence.Rows.Add(student.Name, group.Name, report.AsciiSum, Math.Round(100 - similarityPercentage, 2), report.FileName, report.FilePath, similarityPercentage.ToString("F2"));
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
 
-    private void comboBox_Student_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      UpdateReportList();
-      comboBox_currentReport.SelectedItem = null;
-      numUD_NumberLab.Enabled = true;
-      SetNumericUpDownEnabled(true);
-    }
-
-
-    private void comboBox_currentReport_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      if (comboBox_currentReport.SelectedItem == null)
-      {
-        label_CountWords.Text = "       ";
-        label_CountSymbol.Text = "       ";
-        label_SummASCII.Text = "       ";
-        dataGridView_Coincidence.Rows.Clear();
-        DisplayCodeInfo(null);
-        return;
-      }
-
-      var selectedGroup = comboBox_Group.SelectedItem?.ToString();
-      var selectedStudent = comboBox_Student.SelectedItem?.ToString();
-      var selectedReport = comboBox_currentReport.SelectedItem?.ToString();
-
-      if (selectedGroup == null || selectedStudent == null || selectedReport == null)
-      {
-        return;
-      }
-
-      var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
-      var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
-      var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
-
-      if (report != null)
-      {
-        label_CountWords.Text = $"{report.WordCount}";
-        label_CountSymbol.Text = $"{report.SymbolCount}";
-        label_SummASCII.Text = $"{report.AsciiSum}";
-        DisplayCodeInfo(report.CodeInfo);
-        FillDataGridView(report.AsciiSum, report.FilePath);
-      }
-    }
-    private void UpdateStudentList()
-    {
-      string selectedGroup = comboBox_Group.SelectedItem?.ToString();
-      comboBox_Student.Items.Clear();
-      if (selectedGroup != null)
-      {
-        var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
-        if (group != null)
+        private double CalculateSimilarityPercentage(long currentAsciiSum, long reportAsciiSum)
         {
-          foreach (var student in group.Students)
-          {
-            comboBox_Student.Items.Add(student.Name);
-          }
-        }
-      }
-    }
-    private void UpdateReportList()
-    {
-      string selectedStudent = comboBox_Student.SelectedItem?.ToString();
-      comboBox_currentReport.Items.Clear();
-      if (selectedStudent != null)
-      {
-        var selectedGroup = comboBox_Group.SelectedItem?.ToString();
-        var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
-        var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
+            double maxAsciiSum = Math.Max(currentAsciiSum, reportAsciiSum);
+            double percentage = (Math.Abs(currentAsciiSum - reportAsciiSum) / maxAsciiSum) * 100;
 
-        if (student != null && student.Reports.Any())
+            return percentage;
+        }
+
+        private void UpdateStudentList()
         {
-          foreach (var report in student.Reports)
-          {
-            comboBox_currentReport.Items.Add(report.FileName);
-          }
+            string selectedGroup = comboBox_Group.SelectedItem?.ToString();
+            comboBox_Student.Items.Clear();
+            if (selectedGroup != null)
+            {
+                var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
+                if (group != null)
+                {
+                    foreach (var student in group.Students)
+                    {
+                        comboBox_Student.Items.Add(student.Name);
+                    }
+                }
+            }
         }
-      }
-    }
-
-    private void MainForm_Load(object sender, EventArgs e)
-    {
-      SettingsForm();
-    }
-
-    private void SettingsForm()
-    {
-      panel_newPeport.Click -= FilesReport_Click;
-      label_Filesreport.Click -= FilesReport_Click;
-      panel_addCode.Click -= addCode_Click;
-      label_filesCode.Click -= addCode_Click;
-      comboBox_Student.Enabled = false;
-      numUD_NumberLab.Enabled = false;
-      numUD_NumberLab.Value = 1;
-      numUD_NumberLab.Maximum = 15;
-      numUD_NumberLab.ReadOnly = true;
-      numUD_NumberLab.TextAlign = HorizontalAlignment.Center;
-    }
-
-    private void CheckNumberLabs()
-    {
-      try
-      {
-        if (!numUD_NumberLab.Enabled)
+        private void UpdateReportList()
         {
-          ResetLabelsState();
-          return;
+            string selectedStudent = comboBox_Student.SelectedItem?.ToString();
+            comboBox_currentReport.Items.Clear();
+            if (selectedStudent != null)
+            {
+                var selectedGroup = comboBox_Group.SelectedItem?.ToString();
+                var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
+                var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
+
+                if (student != null && student.Reports.Any())
+                {
+                    foreach (var report in student.Reports)
+                    {
+                        comboBox_currentReport.Items.Add(report.FileName);
+                    }
+                }
+            }
         }
-        if (numUD_NumberLab.Value == 0)
+
+        private void MainForm_Load(object sender, EventArgs e)
         {
-          numUD_NumberLab.Value = 1;
-          throw new FormatException($"Лабораторная работа с номером 0 не может существовать.");
+            SettingsForm();
         }
-        else if (numUD_NumberLab.Value >= 1 && numUD_NumberLab.Enabled)
+
+        private void SettingsForm()
         {
-          ActivateLabelsState();
+            panel_newPeport.Click -= FilesReport_Click;
+            label_Filesreport.Click -= FilesReport_Click;
+            panel_addCode.Click -= addCode_Click;
+            label_filesCode.Click -= addCode_Click;
+            comboBox_Student.Enabled = false;
+            numUD_NumberLab.Enabled = false;
+            numUD_NumberLab.Value = 1;
+            numUD_NumberLab.Maximum = 15;
+            numUD_NumberLab.ReadOnly = true;
+            numUD_NumberLab.TextAlign = HorizontalAlignment.Center;
         }
-      }
-      catch (FormatException fex)
-      {
-        MessageBox.Show($"{fex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        CheckErrorNumeric();
-      }
-      catch (Exception ex)
-      {
-        
-        MessageBox.Show($"{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        CheckErrorNumeric();
-      }
-    }
 
-    private void ResetLabelsState()
-    {
-      label_Filesreport.Click -= FilesReport_Click;
-      label_Filesreport.Visible = false;
-      label_Filesreport.Enabled = false;
-      label_filesCode.Click -= addCode_Click;
-      label_filesCode.Visible = false;
-      label_filesCode.Enabled = false;
-    }
+        private void CheckNumberLabs()
+        {
+            try
+            {
+                if (!numUD_NumberLab.Enabled)
+                {
+                    ResetLabelsState();
+                    return;
+                }
+                if (numUD_NumberLab.Value == 0)
+                {
+                    numUD_NumberLab.Value = 1;
+                    throw new FormatException($"Лабораторная работа с номером 0 не может существовать.");
+                }
+                else if (numUD_NumberLab.Value >= 1 && numUD_NumberLab.Enabled)
+                {
+                    ActivateLabelsState();
+                }
+            }
+            catch (FormatException fex)
+            {
+                MessageBox.Show($"{fex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CheckErrorNumeric();
+            }
+            catch (Exception ex)
+            {
 
-    private void ActivateLabelsState()
-    {
-      label_Filesreport.Click -= FilesReport_Click;
-      label_Filesreport.Click += FilesReport_Click;
-      label_Filesreport.Visible = true;
-      label_Filesreport.Enabled = true;
-      label_filesCode.Click -= addCode_Click;
-      label_filesCode.Click += addCode_Click;
-      label_filesCode.Visible = true;
-      label_filesCode.Enabled = true;
-    }
+                MessageBox.Show($"{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CheckErrorNumeric();
+            }
+        }
 
-    private void CheckErrorNumeric()
-    {
-      if (numUD_NumberLab.Enabled && numUD_NumberLab.Value >= 1)
-      {
-        ActivateLabelsState();
-      }
-      else
-      {
-        ResetLabelsState();
-      }
-    }
+        private void ResetLabelsState()
+        {
+            label_Filesreport.Click -= FilesReport_Click;
+            label_Filesreport.Visible = false;
+            label_Filesreport.Enabled = false;
+            label_filesCode.Click -= addCode_Click;
+            label_filesCode.Visible = false;
+            label_filesCode.Enabled = false;
+        }
 
-    private void SetNumericUpDownEnabled(bool isEnabled)
-    {
-      numUD_NumberLab.Enabled = isEnabled;
-      CheckNumberLabs();
-    }
+        private void ActivateLabelsState()
+        {
+            label_Filesreport.Click -= FilesReport_Click;
+            label_Filesreport.Click += FilesReport_Click;
+            label_Filesreport.Visible = true;
+            label_Filesreport.Enabled = true;
+            label_filesCode.Click -= addCode_Click;
+            label_filesCode.Click += addCode_Click;
+            label_filesCode.Visible = true;
+            label_filesCode.Enabled = true;
+        }
 
-    private void numUD_NumberLab_ValueChanged(object sender, EventArgs e)
-    {
-      CheckNumberLabs();
-    }
+        private void CheckErrorNumeric()
+        {
+            if (numUD_NumberLab.Enabled && numUD_NumberLab.Value >= 1)
+            {
+                ActivateLabelsState();
+            }
+            else
+            {
+                ResetLabelsState();
+            }
+        }
+//Ласт изменение
+        #endregion
+      
   }
-
-  public class Group
+#region Class
+    public class Group
   {
     public string Name { get; set; }
     public List<Student> Students { get; set; } = new List<Student>();
@@ -600,4 +611,5 @@ namespace antiplagiat_lab
     public int CountIf { get; set; }
     public int CountElse { get; set; }
   }
+    #endregion
 }
