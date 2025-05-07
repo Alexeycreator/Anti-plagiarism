@@ -79,6 +79,7 @@
       this.label4 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
+      this.verticalScrollBar = new System.Windows.Forms.VScrollBar();
       this.panel_student.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).BeginInit();
       this.panel_report.SuspendLayout();
@@ -527,7 +528,7 @@
             this.ToolStripMenuItem_menuReport});
       this.menuStrip1.Location = new System.Drawing.Point(0, 0);
       this.menuStrip1.Name = "menuStrip1";
-      this.menuStrip1.Size = new System.Drawing.Size(1105, 36);
+      this.menuStrip1.Size = new System.Drawing.Size(1125, 36);
       this.menuStrip1.TabIndex = 8;
       this.menuStrip1.Text = "menuStrip1";
       // 
@@ -683,11 +684,19 @@
       this.label1.TabIndex = 6;
       this.label1.Text = "FOR:";
       // 
+      // verticalScrollBar
+      // 
+      this.verticalScrollBar.Location = new System.Drawing.Point(1094, 36);
+      this.verticalScrollBar.Name = "verticalScrollBar";
+      this.verticalScrollBar.Size = new System.Drawing.Size(25, 951);
+      this.verticalScrollBar.TabIndex = 9;
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1105, 998);
+      this.ClientSize = new System.Drawing.Size(1125, 998);
+      this.Controls.Add(this.verticalScrollBar);
       this.Controls.Add(this.panel_Concidence);
       this.Controls.Add(this.panel1);
       this.Controls.Add(this.panel_infoReport);
@@ -775,6 +784,7 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn percentMath;
     private System.Windows.Forms.DataGridViewTextBoxColumn NameFile;
     private System.Windows.Forms.DataGridViewTextBoxColumn PathFile;
+    private System.Windows.Forms.VScrollBar verticalScrollBar;
   }
 }
 

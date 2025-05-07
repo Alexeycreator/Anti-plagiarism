@@ -266,8 +266,6 @@ namespace antiplagiat_lab
       }
     }
 
-
-
     private void button_Open_Click(object sender, EventArgs e)
     {
       if (dataGridView_Coincidence.SelectedRows.Count > 0)
@@ -701,6 +699,23 @@ namespace antiplagiat_lab
       numUD_NumberLab.Maximum = 15;
       numUD_NumberLab.ReadOnly = true;
       numUD_NumberLab.TextAlign = HorizontalAlignment.Center;
+      dataGridView_Coincidence.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+      dataGridView_Coincidence.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+      dataGridView_Coincidence.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+      this.AutoScroll = true;
+      this.MouseWheel += new MouseEventHandler(MainForm_MouseWheel);
+    }
+
+    private void MainForm_MouseWheel(object sender, MouseEventArgs e)
+    {
+      if (e.Delta > 0)
+      {
+        verticalScrollBar.Value = Math.Max(verticalScrollBar.Value - verticalScrollBar.SmallChange * 3, verticalScrollBar.Minimum);
+      }
+      else
+      {
+        verticalScrollBar.Value = Math.Min(verticalScrollBar.Value + verticalScrollBar.SmallChange * 3, verticalScrollBar.Maximum);
+      }
     }
 
     private void CheckNumberLabs()
