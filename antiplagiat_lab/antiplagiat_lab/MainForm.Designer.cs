@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
       this.panel_student = new System.Windows.Forms.Panel();
+      this.numUD_NumberLab = new System.Windows.Forms.NumericUpDown();
+      this.labelNumberLab = new System.Windows.Forms.Label();
       this.comboBox_Student = new System.Windows.Forms.ComboBox();
       this.comboBox_Group = new System.Windows.Forms.ComboBox();
       this.label_InfoStudent = new System.Windows.Forms.Label();
@@ -56,6 +58,7 @@
       this.dataGridView_Coincidence = new System.Windows.Forms.DataGridView();
       this.Student = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.Group = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.NumberLab = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.summASCII = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.percentMath = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.NameFile = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -76,9 +79,8 @@
       this.label4 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
-      this.labelNumberLab = new System.Windows.Forms.Label();
-      this.numUD_NumberLab = new System.Windows.Forms.NumericUpDown();
       this.panel_student.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).BeginInit();
       this.panel_report.SuspendLayout();
       this.panel_addCode.SuspendLayout();
       this.panel_newPeport.SuspendLayout();
@@ -87,7 +89,6 @@
       ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Coincidence)).BeginInit();
       this.menuStrip1.SuspendLayout();
       this.panel1.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).BeginInit();
       this.SuspendLayout();
       // 
       // panel_student
@@ -100,10 +101,31 @@
       this.panel_student.Controls.Add(this.label_Group);
       this.panel_student.Controls.Add(this.label_Student);
       this.panel_student.Location = new System.Drawing.Point(16, 46);
-      this.panel_student.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_student.Margin = new System.Windows.Forms.Padding(4);
       this.panel_student.Name = "panel_student";
       this.panel_student.Size = new System.Drawing.Size(413, 246);
       this.panel_student.TabIndex = 1;
+      // 
+      // numUD_NumberLab
+      // 
+      this.numUD_NumberLab.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.numUD_NumberLab.Location = new System.Drawing.Point(151, 200);
+      this.numUD_NumberLab.Name = "numUD_NumberLab";
+      this.numUD_NumberLab.Size = new System.Drawing.Size(240, 34);
+      this.numUD_NumberLab.TabIndex = 8;
+      this.numUD_NumberLab.ValueChanged += new System.EventHandler(this.numUD_NumberLab_ValueChanged);
+      this.numUD_NumberLab.Enter += new System.EventHandler(this.numUD_NumberLab_Enter);
+      // 
+      // labelNumberLab
+      // 
+      this.labelNumberLab.AutoSize = true;
+      this.labelNumberLab.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.labelNumberLab.Location = new System.Drawing.Point(12, 205);
+      this.labelNumberLab.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+      this.labelNumberLab.Name = "labelNumberLab";
+      this.labelNumberLab.Size = new System.Drawing.Size(132, 29);
+      this.labelNumberLab.TabIndex = 7;
+      this.labelNumberLab.Text = "Номер л/р";
       // 
       // comboBox_Student
       // 
@@ -111,7 +133,7 @@
       this.comboBox_Student.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
       this.comboBox_Student.FormattingEnabled = true;
       this.comboBox_Student.Location = new System.Drawing.Point(12, 150);
-      this.comboBox_Student.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.comboBox_Student.Margin = new System.Windows.Forms.Padding(4);
       this.comboBox_Student.Name = "comboBox_Student";
       this.comboBox_Student.Size = new System.Drawing.Size(379, 37);
       this.comboBox_Student.TabIndex = 6;
@@ -123,7 +145,7 @@
       this.comboBox_Group.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
       this.comboBox_Group.FormattingEnabled = true;
       this.comboBox_Group.Location = new System.Drawing.Point(12, 77);
-      this.comboBox_Group.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.comboBox_Group.Margin = new System.Windows.Forms.Padding(4);
       this.comboBox_Group.Name = "comboBox_Group";
       this.comboBox_Group.Size = new System.Drawing.Size(233, 37);
       this.comboBox_Group.TabIndex = 6;
@@ -170,7 +192,7 @@
       this.panel_report.Controls.Add(this.progressBar);
       this.panel_report.Controls.Add(this.label_report);
       this.panel_report.Location = new System.Drawing.Point(437, 46);
-      this.panel_report.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_report.Margin = new System.Windows.Forms.Padding(4);
       this.panel_report.Name = "panel_report";
       this.panel_report.Size = new System.Drawing.Size(653, 246);
       this.panel_report.TabIndex = 2;
@@ -181,7 +203,7 @@
       this.panel_addCode.Controls.Add(this.label_addCode);
       this.panel_addCode.Controls.Add(this.label_filesCode);
       this.panel_addCode.Location = new System.Drawing.Point(333, 48);
-      this.panel_addCode.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_addCode.Margin = new System.Windows.Forms.Padding(4);
       this.panel_addCode.Name = "panel_addCode";
       this.panel_addCode.Size = new System.Drawing.Size(306, 147);
       this.panel_addCode.TabIndex = 10;
@@ -219,7 +241,7 @@
       this.panel_newPeport.Controls.Add(this.label_newReport);
       this.panel_newPeport.Controls.Add(this.label_Filesreport);
       this.panel_newPeport.Location = new System.Drawing.Point(13, 48);
-      this.panel_newPeport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_newPeport.Margin = new System.Windows.Forms.Padding(4);
       this.panel_newPeport.Name = "panel_newPeport";
       this.panel_newPeport.Size = new System.Drawing.Size(306, 147);
       this.panel_newPeport.TabIndex = 10;
@@ -254,7 +276,7 @@
       // progressBar
       // 
       this.progressBar.Location = new System.Drawing.Point(13, 204);
-      this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.progressBar.Margin = new System.Windows.Forms.Padding(4);
       this.progressBar.Name = "progressBar";
       this.progressBar.Size = new System.Drawing.Size(627, 31);
       this.progressBar.TabIndex = 9;
@@ -282,7 +304,7 @@
       this.panel_infoReport.Controls.Add(this.label_NameCountWords);
       this.panel_infoReport.Controls.Add(this.label_InfoReport);
       this.panel_infoReport.Location = new System.Drawing.Point(16, 299);
-      this.panel_infoReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_infoReport.Margin = new System.Windows.Forms.Padding(4);
       this.panel_infoReport.Name = "panel_infoReport";
       this.panel_infoReport.Size = new System.Drawing.Size(747, 299);
       this.panel_infoReport.TabIndex = 6;
@@ -306,7 +328,7 @@
       this.comboBox_currentReport.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
       this.comboBox_currentReport.FormattingEnabled = true;
       this.comboBox_currentReport.Location = new System.Drawing.Point(341, 12);
-      this.comboBox_currentReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.comboBox_currentReport.Margin = new System.Windows.Forms.Padding(4);
       this.comboBox_currentReport.Name = "comboBox_currentReport";
       this.comboBox_currentReport.Size = new System.Drawing.Size(381, 37);
       this.comboBox_currentReport.TabIndex = 6;
@@ -389,7 +411,7 @@
       this.panel_Concidence.Controls.Add(this.button_Open);
       this.panel_Concidence.Controls.Add(this.label_Coincidence);
       this.panel_Concidence.Location = new System.Drawing.Point(16, 606);
-      this.panel_Concidence.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel_Concidence.Margin = new System.Windows.Forms.Padding(4);
       this.panel_Concidence.Name = "panel_Concidence";
       this.panel_Concidence.Size = new System.Drawing.Size(1074, 381);
       this.panel_Concidence.TabIndex = 7;
@@ -402,12 +424,13 @@
       this.dataGridView_Coincidence.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Student,
             this.Group,
+            this.NumberLab,
             this.summASCII,
             this.percentMath,
             this.NameFile,
             this.PathFile});
       this.dataGridView_Coincidence.Location = new System.Drawing.Point(9, 46);
-      this.dataGridView_Coincidence.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.dataGridView_Coincidence.Margin = new System.Windows.Forms.Padding(4);
       this.dataGridView_Coincidence.Name = "dataGridView_Coincidence";
       this.dataGridView_Coincidence.ReadOnly = true;
       this.dataGridView_Coincidence.RowHeadersWidth = 51;
@@ -430,6 +453,14 @@
       this.Group.Name = "Group";
       this.Group.ReadOnly = true;
       this.Group.Width = 125;
+      // 
+      // NumberLab
+      // 
+      this.NumberLab.HeaderText = "Номер работы";
+      this.NumberLab.MinimumWidth = 6;
+      this.NumberLab.Name = "NumberLab";
+      this.NumberLab.ReadOnly = true;
+      this.NumberLab.Width = 125;
       // 
       // summASCII
       // 
@@ -467,7 +498,7 @@
       // 
       this.button_Open.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
       this.button_Open.Location = new System.Drawing.Point(888, 324);
-      this.button_Open.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.button_Open.Margin = new System.Windows.Forms.Padding(4);
       this.button_Open.Name = "button_Open";
       this.button_Open.Size = new System.Drawing.Size(167, 39);
       this.button_Open.TabIndex = 6;
@@ -540,7 +571,7 @@
       this.panel1.Controls.Add(this.label2);
       this.panel1.Controls.Add(this.label1);
       this.panel1.Location = new System.Drawing.Point(772, 299);
-      this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.panel1.Margin = new System.Windows.Forms.Padding(4);
       this.panel1.Name = "panel1";
       this.panel1.Size = new System.Drawing.Size(318, 299);
       this.panel1.TabIndex = 6;
@@ -652,26 +683,6 @@
       this.label1.TabIndex = 6;
       this.label1.Text = "FOR:";
       // 
-      // labelNumberLab
-      // 
-      this.labelNumberLab.AutoSize = true;
-      this.labelNumberLab.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-      this.labelNumberLab.Location = new System.Drawing.Point(12, 205);
-      this.labelNumberLab.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-      this.labelNumberLab.Name = "labelNumberLab";
-      this.labelNumberLab.Size = new System.Drawing.Size(132, 29);
-      this.labelNumberLab.TabIndex = 7;
-      this.labelNumberLab.Text = "Номер л/р";
-      // 
-      // numUD_NumberLab
-      // 
-      this.numUD_NumberLab.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-      this.numUD_NumberLab.Location = new System.Drawing.Point(151, 200);
-      this.numUD_NumberLab.Name = "numUD_NumberLab";
-      this.numUD_NumberLab.Size = new System.Drawing.Size(240, 34);
-      this.numUD_NumberLab.TabIndex = 8;
-      this.numUD_NumberLab.ValueChanged += new System.EventHandler(this.numUD_NumberLab_ValueChanged);
-      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -684,13 +695,14 @@
       this.Controls.Add(this.panel_student);
       this.Controls.Add(this.menuStrip1);
       this.MainMenuStrip = this.menuStrip1;
-      this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+      this.Margin = new System.Windows.Forms.Padding(4);
       this.Name = "MainForm";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
       this.Text = "Антиплагиат";
       this.Load += new System.EventHandler(this.MainForm_Load);
       this.panel_student.ResumeLayout(false);
       this.panel_student.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).EndInit();
       this.panel_report.ResumeLayout(false);
       this.panel_report.PerformLayout();
       this.panel_addCode.ResumeLayout(false);
@@ -706,7 +718,6 @@
       this.menuStrip1.PerformLayout();
       this.panel1.ResumeLayout(false);
       this.panel1.PerformLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -738,12 +749,6 @@
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_addGroup;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_editGroup;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_menuReport;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Student;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Group;
-        private System.Windows.Forms.DataGridViewTextBoxColumn summASCII;
-        private System.Windows.Forms.DataGridViewTextBoxColumn percentMath;
-        private System.Windows.Forms.DataGridViewTextBoxColumn NameFile;
-        private System.Windows.Forms.DataGridViewTextBoxColumn PathFile;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Panel panel_newPeport;
         private System.Windows.Forms.ComboBox comboBox_currentReport;
@@ -763,6 +768,13 @@
         private System.Windows.Forms.Label label1;
     private System.Windows.Forms.NumericUpDown numUD_NumberLab;
     private System.Windows.Forms.Label labelNumberLab;
+    private System.Windows.Forms.DataGridViewTextBoxColumn Student;
+    private System.Windows.Forms.DataGridViewTextBoxColumn Group;
+    private System.Windows.Forms.DataGridViewTextBoxColumn NumberLab;
+    private System.Windows.Forms.DataGridViewTextBoxColumn summASCII;
+    private System.Windows.Forms.DataGridViewTextBoxColumn percentMath;
+    private System.Windows.Forms.DataGridViewTextBoxColumn NameFile;
+    private System.Windows.Forms.DataGridViewTextBoxColumn PathFile;
   }
 }
 

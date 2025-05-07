@@ -1,0 +1,61 @@
+{
+  "Exclude": [
+    "**/bin",
+    "**/bower_components",
+    "**/jspm_packages",
+    "**/node_modules",
+    "**/obj",
+    "**/platforms"
+  ],
+  "Groups": {
+    "ПМИ": {
+      "Fields": {
+        "Labs_1": {
+          "TitleLab": "Лабораторная_работа_1",
+          "NumberLab": 1,
+          "Files": [
+            {
+              "Id": "11bbe219-d7cf-4cc9-ae74-3f3a4e680f76",
+              "StudentName": "Рушев",
+              "FileName": "Otchet.docx",
+              "FilePath": "Отчёты\\ПМИ\\Рушев\\Otchet.docx",
+              "ASCII_Code": 818672
+            },
+            {
+              "Id": "14cfb0a6-8bd9-490b-bae7-165fffc28ca7",
+              "StudentName": "Пура",
+              "FileName": "laba1.docx",
+              "FilePath": "Отчёты\\ПМИ\\Пура\\laba1.docx",
+              "ASCII_Code": 800374
+            }
+          ]
+        },
+        "Labs_2": {
+          "TitleLab": "Лабораторная_работа_2",
+          "NumberLab": 2,
+          "Files": []
+        }
+      }
+    },
+    "МКН": {
+      "Fields": {
+        "Labs_1": {
+          "TitleLab": "Лабораторная_работа_1",
+          "NumberLab": 1,
+          "Files": [
+            {
+              "Id": "23df168c-e6ad-473d-b060-46e2971af7f8",
+              "StudentName": "Картошкина",
+              "FileName": "Lab1.docx",
+              "FilePath": "Отчёты\\МКН\\Картошкина\\Lab1.docx",
+              "ASCII_Code": 912310
+            }
+          ]
+        }
+      }
+    },
+    "АИС": {
+      "Fields": {}
+    }
+  }
+}

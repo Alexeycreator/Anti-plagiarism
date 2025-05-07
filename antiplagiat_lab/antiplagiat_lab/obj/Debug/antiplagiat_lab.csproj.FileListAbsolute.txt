@@ -74,3 +74,43 @@ C:\Users\Алексей\Desktop\Учеба\Дискретная математи
 C:\Users\Алексей\Desktop\Учеба\Дискретная математика\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplag.D254EA6C.Up2Date
 C:\Users\Алексей\Desktop\Учеба\Дискретная математика\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.exe
 C:\Users\Алексей\Desktop\Учеба\Дискретная математика\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.pdb
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.csproj.AssemblyReference.cache
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.csproj.SuggestedBindingRedirects.cache
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.exe.config
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.csproj.ResolveComReference.cache
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.AddGroupForm.resources
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.EditGroupForm.resources
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.MainForm.resources
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.Properties.Resources.resources
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.ReportForm.resources
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.csproj.GenerateResource.cache
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.csproj.CoreCompileInputs.cache
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.exe
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplagiat_lab.pdb
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\antiplagiat_lab.exe.config
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\antiplagiat_lab.exe
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\antiplagiat_lab.pdb
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Microsoft.Bcl.HashCode.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Buffers.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.IO.Pipelines.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Memory.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Text.Encodings.Web.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Text.Json.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.ValueTuple.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Microsoft.Bcl.HashCode.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Buffers.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.IO.Pipelines.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Memory.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Text.Encodings.Web.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Text.Json.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\obj\Debug\antiplag.D254EA6C.Up2Date
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Алексей\Desktop\Учеба\github\Anti-plagiarism\antiplagiat_lab\antiplagiat_lab\bin\Debug\Newtonsoft.Json.xml
