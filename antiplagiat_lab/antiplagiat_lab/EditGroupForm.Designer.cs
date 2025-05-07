@@ -40,6 +40,7 @@ namespace antiplagiat_lab
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.btn_upload_file = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // comboBox_Groups
@@ -148,11 +149,23 @@ namespace antiplagiat_lab
             this.label3.TabIndex = 7;
             this.label3.Text = "Список группы:";
             // 
+            // btn_upload_file
+            // 
+            this.btn_upload_file.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.btn_upload_file.Location = new System.Drawing.Point(12, 268);
+            this.btn_upload_file.Name = "btn_upload_file";
+            this.btn_upload_file.Size = new System.Drawing.Size(233, 39);
+            this.btn_upload_file.TabIndex = 8;
+            this.btn_upload_file.Text = "Загрузить из файла";
+            this.btn_upload_file.UseVisualStyleBackColor = true;
+            this.btn_upload_file.Click += new System.EventHandler(this.btn_upload_file_Click);
+            // 
             // EditGroupForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(628, 350);
+            this.Controls.Add(this.btn_upload_file);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -184,5 +197,6 @@ namespace antiplagiat_lab
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button btn_upload_file;
     }
 }
