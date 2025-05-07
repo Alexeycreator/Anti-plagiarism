@@ -44,8 +44,12 @@ namespace antiplagiat_lab
     }
 
     private void numUD_NumberLab_ValueChanged(object sender, EventArgs e)
-    {
-      CheckNumberLabs();
+    { // отчистка при изменении в нумерик
+            label_CountWords.Text = null;
+            label_CountSymbol.Text = null;
+            label_SummASCII.Text = null;
+            dataGridView_Coincidence.Rows.Clear();
+            CheckNumberLabs();
       if (!numUD_NumberLab.Enabled)
       {
         return;
@@ -118,7 +122,11 @@ namespace antiplagiat_lab
 
     private void comboBox_Group_SelectedIndexChanged(object sender, EventArgs e)
     {
-      UpdateStudentList();
+            label_CountWords.Text = null;
+            label_CountSymbol.Text = null;
+            label_SummASCII.Text = null;
+            dataGridView_Coincidence.Rows.Clear();
+            UpdateStudentList();
       comboBox_Student.SelectedItem = null;
       comboBox_currentReport.SelectedItem = null;
       comboBox_Student.Enabled = true;
@@ -284,7 +292,11 @@ namespace antiplagiat_lab
 
     private void comboBox_Student_SelectedIndexChanged(object sender, EventArgs e)
     {
-      UpdateReportList();
+            label_CountWords.Text = null;
+            label_CountSymbol.Text = null;
+            label_SummASCII.Text = null;
+            dataGridView_Coincidence.Rows.Clear();
+            UpdateReportList();
       comboBox_currentReport.SelectedItem = null;
       numUD_NumberLab.Enabled = true;
       SetNumericUpDownEnabled(true);
