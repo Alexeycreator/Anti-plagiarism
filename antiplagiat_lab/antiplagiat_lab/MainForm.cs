@@ -208,6 +208,7 @@ namespace antiplagiat_lab
         {
           MessageBox.Show("Пожалуйста, выберите группу и студента.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+        SerializationDataLabs();
       }
       catch (Exception ex)
       {
@@ -324,7 +325,6 @@ namespace antiplagiat_lab
         DisplayCodeInfo(report.CodeInfo);
         FillDataGridView(report.AsciiSum, report.FilePath);
       }
-      SerializationDataLabs();
     }
 
 
@@ -389,6 +389,7 @@ namespace antiplagiat_lab
         int labNumber = Convert.ToInt32(numUD_NumberLab.Value);
         string labKey = $"Labs_{labNumber}";
         string groupName = comboBox_Group.Text;
+        string studentName = comboBox_Student.Text;
         if (!root.Groups.ContainsKey(groupName))
         {
           root.Groups[groupName] = new GroupData();
@@ -404,15 +405,42 @@ namespace antiplagiat_lab
           };
         }
         var currentLab = root.Groups[groupName].Fields[labKey];
-        if (currentLab.Files.Any(f => f.StudentName == comboBox_Student.Text))
+        var existingStudentFiles = currentLab.Files.Where(f => f.StudentName == studentName).ToList();
+        if (existingStudentFiles.Any())
         {
-          MessageBox.Show($"Студент {comboBox_Student.Text} уже существует в работе {labNumber}\nДобавление в базу данных проверок невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          return;
-        }
-        if (currentLab.Files.Any(f => f.FilePath == _filePath))
-        {
-          MessageBox.Show($"Файл по пути {_filePath} уже существует в работе {labNumber}\nДобавление в базу данных проверок невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          return;
+          var firstDialogResult = MessageBox.Show(
+              $"Студент {studentName} уже существует в работе {labNumber}\n" +
+              $"Добавление в базу данных проверок невозможно.",
+              "Ошибка",
+              MessageBoxButtons.OKCancel,
+              MessageBoxIcon.Error);
+
+          if (firstDialogResult == DialogResult.OK)
+          {
+            var secondDialogResult = MessageBox.Show(
+                $"Хотите пересоздать данные о студенте {studentName} в группе {groupName}?",
+                "Выберите действие",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (secondDialogResult == DialogResult.Yes)
+            {
+              foreach (var file in existingStudentFiles)
+              {
+                currentLab.Files.Remove(file);
+              }
+              string _jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
+              File.WriteAllText(filePath, _jsonString);
+            }
+            else
+            {
+              return;
+            }
+          }
+          else
+          {
+            return;
+          }
         }
 
         currentLab.Files.Add(new LabFile
@@ -457,7 +485,7 @@ namespace antiplagiat_lab
           File.Delete(filePath);
           throw new FileNotFoundException("Файл не найден.");
         }
-        if(Path.GetExtension(filePath) == ".doc" ||  Path.GetExtension(filePath) == ".docx")
+        if (Path.GetExtension(filePath) == ".doc" || Path.GetExtension(filePath) == ".docx")
         {
           MessageBox.Show($"Формат файла выбран верно");
         }
