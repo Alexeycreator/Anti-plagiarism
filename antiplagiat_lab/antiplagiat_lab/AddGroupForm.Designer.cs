@@ -38,6 +38,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.btn_load_st = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox_NewStudent
@@ -144,11 +145,23 @@
             this.label3.TabIndex = 3;
             this.label3.Text = "Список группы:";
             // 
+            // btn_load_st
+            // 
+            this.btn_load_st.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F);
+            this.btn_load_st.Location = new System.Drawing.Point(12, 280);
+            this.btn_load_st.Name = "btn_load_st";
+            this.btn_load_st.Size = new System.Drawing.Size(127, 39);
+            this.btn_load_st.TabIndex = 4;
+            this.btn_load_st.Text = "Загрузить из файла";
+            this.btn_load_st.UseVisualStyleBackColor = true;
+            this.btn_load_st.Click += new System.EventHandler(this.btn_load_st_Click);
+            // 
             // AddGroupForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(628, 350);
+            this.Controls.Add(this.btn_load_st);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -180,5 +193,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button btn_load_st;
     }
 }

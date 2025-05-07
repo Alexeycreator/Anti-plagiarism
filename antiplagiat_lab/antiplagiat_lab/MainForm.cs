@@ -270,7 +270,7 @@ namespace antiplagiat_lab
     {
       if (dataGridView_Coincidence.SelectedRows.Count > 0)
       {
-        string filePath = dataGridView_Coincidence.SelectedRows[0].Cells[5].Value.ToString();
+        string filePath = dataGridView_Coincidence.SelectedRows[0].Cells[6].Value.ToString();
         if (File.Exists(filePath))
         {
           System.Diagnostics.Process.Start(filePath);
