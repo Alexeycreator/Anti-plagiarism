@@ -17,8 +17,9 @@ namespace antiplagiat_lab
     private int selectedIndexNumberLab;
     private int selectedIndexGroup;
     private int selectedIndexStudent;
-    private string _filePath;
-    private string _fileName;
+    private string _docxFilePath;
+    private string _txtFilePath;
+    private string _docxFileName;
     private long _ascii_code;
     private ReportData reportData;
 
@@ -45,11 +46,11 @@ namespace antiplagiat_lab
 
     private void numUD_NumberLab_ValueChanged(object sender, EventArgs e)
     { // отчистка при изменении в нумерик
-            label_CountWords.Text = null;
-            label_CountSymbol.Text = null;
-            label_SummASCII.Text = null;
-            dataGridView_Coincidence.Rows.Clear();
-            CheckNumberLabs();
+      label_CountWords.Text = null;
+      label_CountSymbol.Text = null;
+      label_SummASCII.Text = null;
+      dataGridView_Coincidence.Rows.Clear();
+      CheckNumberLabs();
       if (!numUD_NumberLab.Enabled)
       {
         return;
@@ -122,11 +123,11 @@ namespace antiplagiat_lab
 
     private void comboBox_Group_SelectedIndexChanged(object sender, EventArgs e)
     {
-            label_CountWords.Text = null;
-            label_CountSymbol.Text = null;
-            label_SummASCII.Text = null;
-            dataGridView_Coincidence.Rows.Clear();
-            UpdateStudentList();
+      label_CountWords.Text = null;
+      label_CountSymbol.Text = null;
+      label_SummASCII.Text = null;
+      dataGridView_Coincidence.Rows.Clear();
+      UpdateStudentList();
       comboBox_Student.SelectedItem = null;
       comboBox_currentReport.SelectedItem = null;
       comboBox_Student.Enabled = true;
@@ -164,8 +165,8 @@ namespace antiplagiat_lab
                   string fileName = Path.GetFileName(filePath);
                   string destFilePath = Path.Combine(destPath, fileName);
 
-                  _filePath = destFilePath;
-                  _fileName = fileName;
+                  _docxFilePath = destFilePath;
+                  _docxFileName = fileName;
 
                   if (fileExists)
                   {
@@ -268,11 +269,18 @@ namespace antiplagiat_lab
 
           string code = File.ReadAllText(openFileDialog.FileName);
           report.CodeInfo = AnalyzeCode(code);
+          _txtFilePath = openFileDialog.FileName;
 
           SaveData();
           DisplayCodeInfo(report.CodeInfo);
         }
       }
+    }
+
+    private void InformationVariableToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      InfoVariableForm infoVariableForm = new InfoVariableForm(_txtFilePath);
+      infoVariableForm.ShowDialog();
     }
 
     private void button_Open_Click(object sender, EventArgs e)
@@ -293,11 +301,11 @@ namespace antiplagiat_lab
 
     private void comboBox_Student_SelectedIndexChanged(object sender, EventArgs e)
     {
-            label_CountWords.Text = null;
-            label_CountSymbol.Text = null;
-            label_SummASCII.Text = null;
-            dataGridView_Coincidence.Rows.Clear();
-            UpdateReportList();
+      label_CountWords.Text = null;
+      label_CountSymbol.Text = null;
+      label_SummASCII.Text = null;
+      dataGridView_Coincidence.Rows.Clear();
+      UpdateReportList();
       comboBox_currentReport.SelectedItem = null;
       numUD_NumberLab.Enabled = true;
       SetNumericUpDownEnabled(true);
@@ -459,8 +467,9 @@ namespace antiplagiat_lab
         {
           Id = Guid.NewGuid().ToString(),
           StudentName = comboBox_Student.Text,
-          FileName = _fileName,
-          FilePath = _filePath,
+          DocxFileName = _docxFileName,
+          DocxFilePath = _docxFilePath,
+          TxtFilePath = _txtFilePath,
           ASCII_Code = _ascii_code
         });
         string jsonString = JsonConvert.SerializeObject(root, Newtonsoft.Json.Formatting.Indented);
@@ -651,7 +660,7 @@ namespace antiplagiat_lab
 
         foreach (var file in filesToCompare)
         {
-          if (file.FilePath == currentFilePath)
+          if (file.DocxFilePath == currentFilePath)
           {
             continue;
           }
@@ -666,8 +675,8 @@ namespace antiplagiat_lab
                 currentLabNumber,
                 file.ASCII_Code,
                 Math.Round(100 - similarityPercentage, 2),
-                file.FileName,
-                file.FilePath
+                file.DocxFileName,
+                file.DocxFilePath
             );
           }
         }

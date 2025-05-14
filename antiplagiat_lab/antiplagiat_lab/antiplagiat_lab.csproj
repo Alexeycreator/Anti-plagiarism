@@ -98,6 +98,12 @@
       <DependentUpon>EditGroupForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GroupData.cs" />
+    <Compile Include="InfoVariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InfoVariableForm.Designer.cs">
+      <DependentUpon>InfoVariableForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="LabData.cs" />
     <Compile Include="LabFile.cs" />
     <Compile Include="MainForm.cs">
@@ -115,11 +121,15 @@
       <DependentUpon>ReportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="RootObject.cs" />
+    <Compile Include="VariableInfo.cs" />
     <EmbeddedResource Include="AddGroupForm.resx">
       <DependentUpon>AddGroupForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditGroupForm.resx">
       <DependentUpon>EditGroupForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InfoVariableForm.resx">
+      <DependentUpon>InfoVariableForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

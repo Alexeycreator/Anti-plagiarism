@@ -80,6 +80,7 @@
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
       this.verticalScrollBar = new System.Windows.Forms.VScrollBar();
+      this.InformationVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.panel_student.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).BeginInit();
       this.panel_report.SuspendLayout();
@@ -525,7 +526,8 @@
       this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolStripMenuItem_addGroup,
             this.ToolStripMenuItem_editGroup,
-            this.ToolStripMenuItem_menuReport});
+            this.ToolStripMenuItem_menuReport,
+            this.InformationVariableToolStripMenuItem});
       this.menuStrip1.Location = new System.Drawing.Point(0, 0);
       this.menuStrip1.Name = "menuStrip1";
       this.menuStrip1.Size = new System.Drawing.Size(1125, 36);
@@ -691,6 +693,15 @@
       this.verticalScrollBar.Size = new System.Drawing.Size(25, 951);
       this.verticalScrollBar.TabIndex = 9;
       // 
+      // InformationVariableToolStripMenuItem
+      // 
+      this.InformationVariableToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
+      this.InformationVariableToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
+      this.InformationVariableToolStripMenuItem.Name = "InformationVariableToolStripMenuItem";
+      this.InformationVariableToolStripMenuItem.Size = new System.Drawing.Size(297, 32);
+      this.InformationVariableToolStripMenuItem.Text = "Информация о переменных";
+      this.InformationVariableToolStripMenuItem.Click += new System.EventHandler(this.InformationVariableToolStripMenuItem_Click);
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -785,6 +796,7 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn NameFile;
     private System.Windows.Forms.DataGridViewTextBoxColumn PathFile;
     private System.Windows.Forms.VScrollBar verticalScrollBar;
+    private System.Windows.Forms.ToolStripMenuItem InformationVariableToolStripMenuItem;
   }
 }
 
