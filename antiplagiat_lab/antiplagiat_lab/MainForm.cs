@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -17,11 +18,14 @@ namespace antiplagiat_lab
     private int selectedIndexNumberLab;
     private int selectedIndexGroup;
     private int selectedIndexStudent;
-    private string _docxFilePath;
-    private string _txtFilePath;
-    private string _docxFileName;
-    private long _ascii_code;
+    private static string _docxFilePath;
+    private static string _txtFilePath;
+    private static string _docxFileName;
+    private static long _ascii_code;
     private ReportData reportData;
+    private string typeFile;
+    public string checkCoincidenceFileCode;
+    public string checkSelectedStudentFileCode;
 
     public MainForm()
     {
@@ -137,6 +141,7 @@ namespace antiplagiat_lab
     {
       try
       {
+        typeFile = "doc";
         if (comboBox_Group.SelectedItem != null && comboBox_Student.SelectedItem != null)
         {
           using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -227,6 +232,7 @@ namespace antiplagiat_lab
 
     private void addCode_Click(object sender, EventArgs e)
     {
+      typeFile = "text";
       if (comboBox_Group.SelectedItem == null || comboBox_Student.SelectedItem == null || comboBox_currentReport.SelectedItem == null)
       {
         MessageBox.Show("Выберите группу, студента и отчет для добавления кода.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -263,14 +269,15 @@ namespace antiplagiat_lab
 
             if (dialogResult == DialogResult.No)
             {
+              _txtFilePath = Path.GetFullPath(openFileDialog.FileName);
               return;
             }
           }
 
           string code = File.ReadAllText(openFileDialog.FileName);
           report.CodeInfo = AnalyzeCode(code);
-          _txtFilePath = openFileDialog.FileName;
-
+          _txtFilePath = Path.GetFullPath(openFileDialog.FileName);
+          SerializationDataLabs();
           SaveData();
           DisplayCodeInfo(report.CodeInfo);
         }
@@ -279,7 +286,7 @@ namespace antiplagiat_lab
 
     private void InformationVariableToolStripMenuItem_Click(object sender, EventArgs e)
     {
-      InfoVariableForm infoVariableForm = new InfoVariableForm(_txtFilePath);
+      InfoVariableForm infoVariableForm = new InfoVariableForm(checkSelectedStudentFileCode, checkCoincidenceFileCode);
       infoVariableForm.ShowDialog();
     }
 
@@ -428,50 +435,116 @@ namespace antiplagiat_lab
         var existingStudentFiles = currentLab.Files.Where(f => f.StudentName == studentName).ToList();
         if (existingStudentFiles.Any())
         {
-          var firstDialogResult = MessageBox.Show(
+          switch (typeFile)
+          {
+            case "doc":
+              var firstDialogResult = MessageBox.Show(
               $"Студент {studentName} уже существует в работе {labNumber}\n" +
               $"Добавление в базу данных проверок невозможно.",
               "Ошибка",
               MessageBoxButtons.OKCancel,
               MessageBoxIcon.Error);
 
-          if (firstDialogResult == DialogResult.OK)
-          {
-            var secondDialogResult = MessageBox.Show(
-                $"Хотите пересоздать данные о студенте {studentName} в группе {groupName}?",
-                "Выберите действие",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (secondDialogResult == DialogResult.Yes)
-            {
-              foreach (var file in existingStudentFiles)
+              if (firstDialogResult == DialogResult.OK)
               {
-                currentLab.Files.Remove(file);
+                var secondDialogResult = MessageBox.Show(
+                    $"Хотите пересоздать данные о студенте {studentName} в группе {groupName}?",
+                    "Выберите действие",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (secondDialogResult == DialogResult.Yes)
+                {
+                  foreach (var file in existingStudentFiles)
+                  {
+                    currentLab.Files.Remove(file);
+                  }
+                  string _jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
+                  File.WriteAllText(filePath, _jsonString);
+                }
+                else
+                {
+                  return;
+                }
               }
-              string _jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
-              File.WriteAllText(filePath, _jsonString);
-            }
-            else
-            {
-              return;
-            }
-          }
-          else
-          {
-            return;
+              else
+              {
+                return;
+              }
+              break;
+            case "text":
+              var _firstDialogResult = MessageBox.Show(
+              $"Файл исходного кода у студента {studentName} уже существует в работе {labNumber}\n" +
+              $"Добавление в базу данных проверок невозможно.",
+              "Ошибка",
+              MessageBoxButtons.OKCancel,
+              MessageBoxIcon.Error);
+
+              if (_firstDialogResult == DialogResult.OK)
+              {
+                var _secondDialogResult = MessageBox.Show(
+                    $"Хотите пересоздать данные о файле исходного кода студента {studentName} в группе {groupName}?",
+                    "Выберите действие",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (_secondDialogResult == DialogResult.Yes)
+                {
+                  foreach (var file in existingStudentFiles)
+                  {
+                    currentLab.Files.Remove(file);
+                  }
+                  string __jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
+                  File.WriteAllText(filePath, __jsonString);
+                }
+                else
+                {
+                  return;
+                }
+              }
+              else
+              {
+                return;
+              }
+              break;
+            default: break;
           }
         }
 
-        currentLab.Files.Add(new LabFile
+        switch (typeFile)
         {
-          Id = Guid.NewGuid().ToString(),
-          StudentName = comboBox_Student.Text,
-          DocxFileName = _docxFileName,
-          DocxFilePath = _docxFilePath,
-          TxtFilePath = _txtFilePath,
-          ASCII_Code = _ascii_code
-        });
+          case "doc":
+            currentLab.Files.Add(new LabFile
+            {
+              Id = Guid.NewGuid().ToString(),
+              StudentName = comboBox_Student.Text,
+              DocxFileName = _docxFileName,
+              DocxFilePath = _docxFilePath,
+              TxtFilePath = _txtFilePath,
+              ASCII_Code = _ascii_code
+            });
+            break;
+          case "text":
+            var existingFile = currentLab.Files.FirstOrDefault(f => f.StudentName == studentName);
+            if (existingFile != null)
+            {
+              existingFile.TxtFilePath = _txtFilePath;
+            }
+            else
+            {
+              currentLab.Files.Add(new LabFile
+              {
+                Id = Guid.NewGuid().ToString(),
+                StudentName = studentName,
+                DocxFileName = _docxFileName,
+                DocxFilePath = _docxFilePath,
+                TxtFilePath = _txtFilePath,
+                ASCII_Code = _ascii_code
+              });
+            }
+            break;
+          default: break;
+        }
         string jsonString = JsonConvert.SerializeObject(root, Newtonsoft.Json.Formatting.Indented);
         File.WriteAllText(filePath, jsonString);
 
@@ -611,7 +684,7 @@ namespace antiplagiat_lab
         label_countIF.Text = "       ";
         label_countELSE.Text = "       ";
       }
-      else
+      else if (_txtFilePath != null)
       {
         label_countFOR.Text = $"{codeInfo.CountFor}";
         label_countWHILE.Text = $"{codeInfo.CountWhile}";
@@ -628,7 +701,8 @@ namespace antiplagiat_lab
     private void FillDataGridView(long currentAsciiSum, string currentFilePath)
     {
       dataGridView_Coincidence.Rows.Clear();
-
+      checkCoincidenceFileCode = string.Empty;
+      checkSelectedStudentFileCode = string.Empty;
       try
       {
         string jsonPath = "dataCheckLabs.json";
@@ -639,14 +713,12 @@ namespace antiplagiat_lab
         }
         string jsonData = File.ReadAllText(jsonPath);
         RootObject root = JsonConvert.DeserializeObject<RootObject>(jsonData);
-
         string selectGroup = comboBox_Group.Text;
         if (!root.Groups.ContainsKey(selectGroup))
         {
           MessageBox.Show($"Группа {selectGroup} не найдена в данных!");
           return;
         }
-
         int currentLabNumber = Convert.ToInt32(numUD_NumberLab.Value);
         string labKeyToCompare = $"Labs_{currentLabNumber}";
 
@@ -655,18 +727,20 @@ namespace antiplagiat_lab
           MessageBox.Show($"Лабораторная работа №{currentLabNumber} не найдена в группе {selectGroup}!");
           return;
         }
-
         var filesToCompare = root.Groups[selectGroup].Fields[labKeyToCompare].Files;
-
+        string currentStudent = comboBox_Student.Text;
+        bool hasMatches = false;
         foreach (var file in filesToCompare)
         {
-          if (file.DocxFilePath == currentFilePath)
+          if (file.StudentName == currentStudent)
+          {
+            checkSelectedStudentFileCode = file.TxtFilePath;
+          }
+          if (file.DocxFilePath == currentFilePath || file.StudentName == currentStudent)
           {
             continue;
           }
-
           double similarityPercentage = CalculateSimilarityPercentage(currentAsciiSum, file.ASCII_Code);
-
           if (similarityPercentage <= 25)
           {
             dataGridView_Coincidence.Rows.Add(
@@ -676,8 +750,18 @@ namespace antiplagiat_lab
                 file.ASCII_Code,
                 Math.Round(100 - similarityPercentage, 2),
                 file.DocxFileName,
-                file.DocxFilePath
+                file.DocxFilePath,
+                file.TxtFilePath
             );
+            hasMatches = true;
+          }
+        }
+        if (hasMatches && dataGridView_Coincidence.Rows.Count > 0)
+        {
+          var txtFilePathCell = dataGridView_Coincidence.Rows[0].Cells[7];
+          if (txtFilePathCell.Value != null)
+          {
+            checkCoincidenceFileCode = txtFilePathCell.Value.ToString();
           }
         }
       }

@@ -56,19 +56,13 @@
       this.label_InfoReport = new System.Windows.Forms.Label();
       this.panel_Concidence = new System.Windows.Forms.Panel();
       this.dataGridView_Coincidence = new System.Windows.Forms.DataGridView();
-      this.Student = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.Group = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.NumberLab = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.summASCII = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.percentMath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.NameFile = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PathFile = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.button_Open = new System.Windows.Forms.Button();
       this.label_Coincidence = new System.Windows.Forms.Label();
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.ToolStripMenuItem_addGroup = new System.Windows.Forms.ToolStripMenuItem();
       this.ToolStripMenuItem_editGroup = new System.Windows.Forms.ToolStripMenuItem();
       this.ToolStripMenuItem_menuReport = new System.Windows.Forms.ToolStripMenuItem();
+      this.InformationVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.panel1 = new System.Windows.Forms.Panel();
       this.label_countELSE = new System.Windows.Forms.Label();
       this.label_countIF = new System.Windows.Forms.Label();
@@ -80,7 +74,14 @@
       this.label2 = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
       this.verticalScrollBar = new System.Windows.Forms.VScrollBar();
-      this.InformationVariableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      this.Student = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.Group = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.NumberLab = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.summASCII = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.percentMath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.NameFile = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.PathFile = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.pathFileCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.panel_student.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.numUD_NumberLab)).BeginInit();
       this.panel_report.SuspendLayout();
@@ -430,7 +431,8 @@
             this.summASCII,
             this.percentMath,
             this.NameFile,
-            this.PathFile});
+            this.PathFile,
+            this.pathFileCode});
       this.dataGridView_Coincidence.Location = new System.Drawing.Point(9, 46);
       this.dataGridView_Coincidence.Margin = new System.Windows.Forms.Padding(4);
       this.dataGridView_Coincidence.Name = "dataGridView_Coincidence";
@@ -439,62 +441,6 @@
       this.dataGridView_Coincidence.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
       this.dataGridView_Coincidence.Size = new System.Drawing.Size(1053, 271);
       this.dataGridView_Coincidence.TabIndex = 7;
-      // 
-      // Student
-      // 
-      this.Student.HeaderText = "Студент";
-      this.Student.MinimumWidth = 6;
-      this.Student.Name = "Student";
-      this.Student.ReadOnly = true;
-      this.Student.Width = 125;
-      // 
-      // Group
-      // 
-      this.Group.HeaderText = "Группа";
-      this.Group.MinimumWidth = 6;
-      this.Group.Name = "Group";
-      this.Group.ReadOnly = true;
-      this.Group.Width = 125;
-      // 
-      // NumberLab
-      // 
-      this.NumberLab.HeaderText = "Номер работы";
-      this.NumberLab.MinimumWidth = 6;
-      this.NumberLab.Name = "NumberLab";
-      this.NumberLab.ReadOnly = true;
-      this.NumberLab.Width = 125;
-      // 
-      // summASCII
-      // 
-      this.summASCII.HeaderText = "Сумма ASCII-кода";
-      this.summASCII.MinimumWidth = 6;
-      this.summASCII.Name = "summASCII";
-      this.summASCII.ReadOnly = true;
-      this.summASCII.Width = 125;
-      // 
-      // percentMath
-      // 
-      this.percentMath.HeaderText = "Процент совпадения";
-      this.percentMath.MinimumWidth = 6;
-      this.percentMath.Name = "percentMath";
-      this.percentMath.ReadOnly = true;
-      this.percentMath.Width = 125;
-      // 
-      // NameFile
-      // 
-      this.NameFile.HeaderText = "Наименование файла";
-      this.NameFile.MinimumWidth = 6;
-      this.NameFile.Name = "NameFile";
-      this.NameFile.ReadOnly = true;
-      this.NameFile.Width = 125;
-      // 
-      // PathFile
-      // 
-      this.PathFile.HeaderText = "Путь к файлу";
-      this.PathFile.MinimumWidth = 6;
-      this.PathFile.Name = "PathFile";
-      this.PathFile.ReadOnly = true;
-      this.PathFile.Width = 125;
       // 
       // button_Open
       // 
@@ -560,6 +506,15 @@
       this.ToolStripMenuItem_menuReport.Size = new System.Drawing.Size(235, 32);
       this.ToolStripMenuItem_menuReport.Text = "Управление отчётами";
       this.ToolStripMenuItem_menuReport.Click += new System.EventHandler(this.ToolStripMenuItem_menuReport_Click);
+      // 
+      // InformationVariableToolStripMenuItem
+      // 
+      this.InformationVariableToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
+      this.InformationVariableToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
+      this.InformationVariableToolStripMenuItem.Name = "InformationVariableToolStripMenuItem";
+      this.InformationVariableToolStripMenuItem.Size = new System.Drawing.Size(297, 32);
+      this.InformationVariableToolStripMenuItem.Text = "Информация о переменных";
+      this.InformationVariableToolStripMenuItem.Click += new System.EventHandler(this.InformationVariableToolStripMenuItem_Click);
       // 
       // panel1
       // 
@@ -693,14 +648,69 @@
       this.verticalScrollBar.Size = new System.Drawing.Size(25, 951);
       this.verticalScrollBar.TabIndex = 9;
       // 
-      // InformationVariableToolStripMenuItem
+      // Student
       // 
-      this.InformationVariableToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
-      this.InformationVariableToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
-      this.InformationVariableToolStripMenuItem.Name = "InformationVariableToolStripMenuItem";
-      this.InformationVariableToolStripMenuItem.Size = new System.Drawing.Size(297, 32);
-      this.InformationVariableToolStripMenuItem.Text = "Информация о переменных";
-      this.InformationVariableToolStripMenuItem.Click += new System.EventHandler(this.InformationVariableToolStripMenuItem_Click);
+      this.Student.HeaderText = "Студент";
+      this.Student.MinimumWidth = 6;
+      this.Student.Name = "Student";
+      this.Student.ReadOnly = true;
+      this.Student.Width = 125;
+      // 
+      // Group
+      // 
+      this.Group.HeaderText = "Группа";
+      this.Group.MinimumWidth = 6;
+      this.Group.Name = "Group";
+      this.Group.ReadOnly = true;
+      this.Group.Width = 125;
+      // 
+      // NumberLab
+      // 
+      this.NumberLab.HeaderText = "Номер работы";
+      this.NumberLab.MinimumWidth = 6;
+      this.NumberLab.Name = "NumberLab";
+      this.NumberLab.ReadOnly = true;
+      this.NumberLab.Width = 125;
+      // 
+      // summASCII
+      // 
+      this.summASCII.HeaderText = "Сумма ASCII-кода";
+      this.summASCII.MinimumWidth = 6;
+      this.summASCII.Name = "summASCII";
+      this.summASCII.ReadOnly = true;
+      this.summASCII.Width = 125;
+      // 
+      // percentMath
+      // 
+      this.percentMath.HeaderText = "Процент совпадения";
+      this.percentMath.MinimumWidth = 6;
+      this.percentMath.Name = "percentMath";
+      this.percentMath.ReadOnly = true;
+      this.percentMath.Width = 125;
+      // 
+      // NameFile
+      // 
+      this.NameFile.HeaderText = "Наименование файла";
+      this.NameFile.MinimumWidth = 6;
+      this.NameFile.Name = "NameFile";
+      this.NameFile.ReadOnly = true;
+      this.NameFile.Width = 125;
+      // 
+      // PathFile
+      // 
+      this.PathFile.HeaderText = "Путь к файлу";
+      this.PathFile.MinimumWidth = 6;
+      this.PathFile.Name = "PathFile";
+      this.PathFile.ReadOnly = true;
+      this.PathFile.Width = 125;
+      // 
+      // pathFileCode
+      // 
+      this.pathFileCode.HeaderText = "Путь к исходному коду";
+      this.pathFileCode.MinimumWidth = 6;
+      this.pathFileCode.Name = "pathFileCode";
+      this.pathFileCode.ReadOnly = true;
+      this.pathFileCode.Width = 125;
       // 
       // MainForm
       // 
@@ -788,6 +798,8 @@
         private System.Windows.Forms.Label label1;
     private System.Windows.Forms.NumericUpDown numUD_NumberLab;
     private System.Windows.Forms.Label labelNumberLab;
+    private System.Windows.Forms.VScrollBar verticalScrollBar;
+    private System.Windows.Forms.ToolStripMenuItem InformationVariableToolStripMenuItem;
     private System.Windows.Forms.DataGridViewTextBoxColumn Student;
     private System.Windows.Forms.DataGridViewTextBoxColumn Group;
     private System.Windows.Forms.DataGridViewTextBoxColumn NumberLab;
@@ -795,8 +807,7 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn percentMath;
     private System.Windows.Forms.DataGridViewTextBoxColumn NameFile;
     private System.Windows.Forms.DataGridViewTextBoxColumn PathFile;
-    private System.Windows.Forms.VScrollBar verticalScrollBar;
-    private System.Windows.Forms.ToolStripMenuItem InformationVariableToolStripMenuItem;
+    private System.Windows.Forms.DataGridViewTextBoxColumn pathFileCode;
   }
 }
 

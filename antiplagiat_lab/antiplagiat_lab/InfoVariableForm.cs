@@ -10,9 +10,11 @@ namespace antiplagiat_lab
   public partial class InfoVariableForm : Form
   {
     private readonly string filePath;
-    public InfoVariableForm(string _filePath)
+    private readonly string checkFileCode;
+    public InfoVariableForm(string _filePath, string _checkFileCode)
     {
       filePath = _filePath;
+      checkFileCode = _checkFileCode;
       InitializeComponent();
     }
 
@@ -23,21 +25,23 @@ namespace antiplagiat_lab
 
     private void Print()
     {
-      try
-      {
-        string code = File.ReadAllText(filePath);
-        List<VariableInfo> variables = FindVariableDeclarations(code);
+      rTbxInfoVariable.Text += $"{filePath}";
+      rTbxInfoVariable.Text += $"\n{checkFileCode}";
+      //try
+      //{
+      //  string code = File.ReadAllText(filePath);
+      //  List<VariableInfo> variables = FindVariableDeclarations(code);
 
-        rTbxInfoVariable.Text = "Найденные переменные:\n";
-        foreach (var variable in variables)
-        {
-          rTbxInfoVariable.Text += variable.ToString() + "\n";
-        }
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine($"Ошибка: {ex.Message}");
-      }
+      //  rTbxInfoVariable.Text = "Найденные переменные:\n";
+      //  foreach (var variable in variables)
+      //  {
+      //    rTbxInfoVariable.Text += variable.ToString() + "\n";
+      //  }
+      //}
+      //catch (Exception ex)
+      //{
+      //  Console.WriteLine($"Ошибка: {ex.Message}");
+      //}
     }
 
     public static List<VariableInfo> FindVariableDeclarations(string code)
