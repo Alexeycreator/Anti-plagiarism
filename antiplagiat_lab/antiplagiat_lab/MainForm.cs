@@ -127,9 +127,13 @@ namespace antiplagiat_lab
 
     private void comboBox_Group_SelectedIndexChanged(object sender, EventArgs e)
     {
-      label_CountWords.Text = null;
-      label_CountSymbol.Text = null;
-      label_SummASCII.Text = null;
+      label_countFOR.Text = "       ";
+      label_countWHILE.Text = "       ";
+      label_countIF.Text = "       ";
+      label_countELSE.Text = "       ";
+      label_CountWords.Text = "       ";
+      label_CountSymbol.Text = "       ";
+      label_SummASCII.Text = "       ";
       dataGridView_Coincidence.Rows.Clear();
       UpdateStudentList();
       comboBox_Student.SelectedItem = null;
@@ -276,10 +280,22 @@ namespace antiplagiat_lab
 
           string code = File.ReadAllText(openFileDialog.FileName);
           report.CodeInfo = AnalyzeCode(code);
-          _txtFilePath = Path.GetFullPath(openFileDialog.FileName);
+          string relativePath = Path.Combine("Отчёты", selectedGroup, selectedStudent, "Code.txt");
+          _txtFilePath = relativePath;
           SerializationDataLabs();
           SaveData();
           DisplayCodeInfo(report.CodeInfo);
+          try
+          {
+            string targetDir = Path.Combine("Отчёты", selectedGroup, selectedStudent);
+            Directory.CreateDirectory(targetDir);
+            string targetPath = Path.Combine(targetDir, "Code.txt");
+            File.Copy(openFileDialog.FileName, targetPath, true);
+          }
+          catch (Exception ex)
+          {
+            MessageBox.Show($"Ошибка при копировании файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          }
         }
       }
     }
@@ -308,9 +324,13 @@ namespace antiplagiat_lab
 
     private void comboBox_Student_SelectedIndexChanged(object sender, EventArgs e)
     {
-      label_CountWords.Text = null;
-      label_CountSymbol.Text = null;
-      label_SummASCII.Text = null;
+      label_countFOR.Text = "       ";
+      label_countWHILE.Text = "       ";
+      label_countIF.Text = "       ";
+      label_countELSE.Text = "       ";
+      label_CountWords.Text = "       ";
+      label_CountSymbol.Text = "       ";
+      label_SummASCII.Text = "       ";
       dataGridView_Coincidence.Rows.Clear();
       UpdateReportList();
       comboBox_currentReport.SelectedItem = null;
@@ -520,35 +540,135 @@ namespace antiplagiat_lab
               StudentName = comboBox_Student.Text,
               DocxFileName = _docxFileName,
               DocxFilePath = _docxFilePath,
-              TxtFilePath = _txtFilePath,
+              TxtFilePath = null,
               ASCII_Code = _ascii_code
             });
+            if (_docxFileName != "Otchet.docx" || _docxFileName != "Otchet.docx")
+            {
+              throw new FormatException($"Загруженный файл имеет некорректное название. Исправьте на 'Otchet'!\n" +
+                $"Не исправив название, будет невозможно проверить исходный код данного студента.");
+            }
             break;
           case "text":
-            var existingFile = currentLab.Files.FirstOrDefault(f => f.StudentName == studentName);
+            const string jsonFilePath = "dataCheckLabs.json";
+            var jsonData = File.Exists(jsonFilePath)
+                ? JsonConvert.DeserializeObject<RootObject>(File.ReadAllText(jsonFilePath))
+                : new RootObject();
+            string _groupName = comboBox_Group.Text;
+            string labName = $"Labs_{labNumber}";
+            string reportsFolder = "Отчёты";
+            if (!jsonData.Groups.ContainsKey(groupName))
+            {
+              jsonData.Groups[groupName] = new GroupData { Fields = new Dictionary<string, LabData>() };
+            }
+            if (!jsonData.Groups[groupName].Fields.ContainsKey(labName))
+            {
+              jsonData.Groups[groupName].Fields[labName] = new LabData { Files = new List<LabFile>() };
+            }
+            var lab = jsonData.Groups[groupName].Fields[labName];
+            var existingJsonFile = lab.Files.Find(f => string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
+            string docxFileName = null;
+            string docxFilePath = null;
+
+            if (existingJsonFile != null)
+            {
+              if (!string.IsNullOrEmpty(existingJsonFile.DocxFileName))
+              {
+                docxFileName = existingJsonFile.DocxFileName;
+                if (!docxFileName.Equals("Otchet.docx", StringComparison.OrdinalIgnoreCase) &&
+                    !docxFileName.Equals("Otchet.doc", StringComparison.OrdinalIgnoreCase))
+                {
+                  throw new FormatException("Название файла должно быть 'Otchet.docx' или 'Otchet.doc'");
+                }
+                docxFilePath = !string.IsNullOrEmpty(existingJsonFile.DocxFilePath)
+                  ? existingJsonFile.DocxFilePath.Contains(reportsFolder)
+                  ? existingJsonFile.DocxFilePath.Substring(existingJsonFile.DocxFilePath.IndexOf(reportsFolder))
+                  : Path.Combine(reportsFolder, groupName, studentName, docxFileName ?? "Otchet.docx")
+                  : Path.Combine(reportsFolder, groupName, studentName, docxFileName ?? "Otchet.docx");
+              }
+            }
+            if (string.IsNullOrEmpty(docxFileName))
+            {
+              string docxPath = Path.Combine(reportsFolder, groupName, studentName, "Otchet.docx");
+              string docPath = Path.Combine(reportsFolder, groupName, studentName, "Otchet.doc");
+
+              if (File.Exists(docxPath))
+              {
+                docxFileName = "Otchet.docx";
+                docxFilePath = docxPath;
+              }
+              else if (File.Exists(docPath))
+              {
+                docxFileName = "Otchet.doc";
+                docxFilePath = docPath;
+              }
+              else
+              {
+                docxFileName = "Otchet.docx";
+                docxFilePath = Path.Combine(reportsFolder, groupName, studentName, docxFileName);
+              }
+            }
+
+            long asciiCode = 0;
+            bool asciiCodeValid = false;
+
+            if (!string.IsNullOrWhiteSpace(label_SummASCII.Text))
+            {
+              string cleanAscii = new string(label_SummASCII.Text.Where(c => char.IsDigit(c)).ToArray());
+
+              if (!string.IsNullOrEmpty(cleanAscii) && long.TryParse(cleanAscii, out long parsedAscii))
+              {
+                asciiCode = parsedAscii;
+                asciiCodeValid = true;
+              }
+            }
+            if (!asciiCodeValid && existingJsonFile != null)
+            {
+              asciiCode = existingJsonFile.ASCII_Code;
+            }
+            var existingFile = currentLab.Files.Find(f => string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
+
             if (existingFile != null)
             {
               existingFile.TxtFilePath = _txtFilePath;
+              existingFile.DocxFileName = docxFileName;
+              existingFile.DocxFilePath = docxFilePath;
+              existingFile.ASCII_Code = asciiCode;
             }
             else
             {
-              currentLab.Files.Add(new LabFile
+              var newFile = new LabFile
               {
                 Id = Guid.NewGuid().ToString(),
                 StudentName = studentName,
-                DocxFileName = _docxFileName,
-                DocxFilePath = _docxFilePath,
                 TxtFilePath = _txtFilePath,
-                ASCII_Code = _ascii_code
+                DocxFileName = docxFileName,
+                DocxFilePath = docxFilePath,
+                ASCII_Code = asciiCode
+              };
+
+              currentLab.Files.Add(newFile);
+              lab.Files.Add(new LabFile
+              {
+                Id = newFile.Id,
+                StudentName = newFile.StudentName,
+                DocxFileName = newFile.DocxFileName,
+                DocxFilePath = newFile.DocxFilePath,
+                TxtFilePath = newFile.TxtFilePath,
+                ASCII_Code = newFile.ASCII_Code
               });
             }
+            File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(jsonData, Formatting.Indented));
             break;
           default: break;
         }
-        string jsonString = JsonConvert.SerializeObject(root, Newtonsoft.Json.Formatting.Indented);
+        string jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
         File.WriteAllText(filePath, jsonString);
-
         MessageBox.Show("Данные успешно сохранены!");
+      }
+      catch (FormatException ex)
+      {
+        MessageBox.Show($"{ex.Message}", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
       }
       catch (Exception ex)
       {
@@ -677,6 +797,7 @@ namespace antiplagiat_lab
 
     private void DisplayCodeInfo(CodeAnalysis codeInfo)
     {
+      string studentCodePath = Path.Combine("Отчёты", comboBox_Group.Text, comboBox_Student.Text, "Code.txt");
       if (codeInfo == null)
       {
         label_countFOR.Text = "       ";
@@ -684,12 +805,22 @@ namespace antiplagiat_lab
         label_countIF.Text = "       ";
         label_countELSE.Text = "       ";
       }
-      else if (_txtFilePath != null)
+      else if (studentCodePath != null)
       {
-        label_countFOR.Text = $"{codeInfo.CountFor}";
-        label_countWHILE.Text = $"{codeInfo.CountWhile}";
-        label_countIF.Text = $"{codeInfo.CountIf}";
-        label_countELSE.Text = $"{codeInfo.CountElse}";
+        if (File.Exists(studentCodePath))
+        {
+          label_countFOR.Text = $"{codeInfo.CountFor}";
+          label_countWHILE.Text = $"{codeInfo.CountWhile}";
+          label_countIF.Text = $"{codeInfo.CountIf}";
+          label_countELSE.Text = $"{codeInfo.CountElse}";
+        }
+      }
+      else
+      {
+        label_countFOR.Text = "       ";
+        label_countWHILE.Text = "       ";
+        label_countIF.Text = "       ";
+        label_countELSE.Text = "       ";
       }
     }
 

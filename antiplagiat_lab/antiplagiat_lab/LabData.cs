@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace antiplagiat_lab
 {
@@ -10,6 +6,6 @@ namespace antiplagiat_lab
   {
     public string TitleLab { get; set; }
     public int NumberLab { get; set; }
-    public List<LabFile> Files { get; set; }
+    public List<LabFile> Files { get; set; } = new List<LabFile>();
   }
 }

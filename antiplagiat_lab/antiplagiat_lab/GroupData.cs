@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace antiplagiat_lab
 {
   public class GroupData
   {
-    public Dictionary<string, LabData> Fields { get; set; }
+    public Dictionary<string, LabData> Fields { get; set; } = new Dictionary<string, LabData>();
   }
 }

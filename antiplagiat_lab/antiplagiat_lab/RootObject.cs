@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace antiplagiat_lab
 {
   public class RootObject
   {
-    public List<string> Exclude { get; set; }
-    public Dictionary<string, GroupData> Groups { get; set; }
+    public List<string> Exclude { get; set; } = new List<string>();
+    public Dictionary<string, GroupData> Groups { get; set; } = new Dictionary<string, GroupData>();
   }
 }
