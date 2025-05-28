@@ -1048,11 +1048,24 @@ namespace antiplagiat_lab
       }
     }
 
-    #endregion
+        #endregion
 
-  }
-  #region Class
-  public class Group
+        private void verticalScrollBar_Scroll(object sender, ScrollEventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            string authors = "Авторы приложения Антиплагиат:\n\tСтуденты групп ИТ-123 и ПМИ-123\n\tКалинин Андрей Алексеевич\n\tЗеничева Эльмира Сергеевна\n\tПура Алексей Вячеславович\n\tРушев Алексей Михайлович";
+            string creationDate = "Дата создания: Май 2025 года";
+            string info = $"{authors}\n\n{creationDate}";
+
+            MessageBox.Show(info, "О приложении Антиплагиат");
+        }
+    }
+    #region Class
+    public class Group
   {
     public string Name { get; set; }
     public List<Student> Students { get; set; } = new List<Student>();
