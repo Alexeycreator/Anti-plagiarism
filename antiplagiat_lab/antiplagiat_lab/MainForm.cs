@@ -246,7 +246,8 @@ namespace antiplagiat_lab
       string selectedGroup = comboBox_Group.SelectedItem.ToString();
       string selectedStudent = comboBox_Student.SelectedItem.ToString();
       string selectedReport = comboBox_currentReport.SelectedItem.ToString();
-
+      string selectedNumUD = numUD_NumberLab.Value.ToString();
+         
       var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
       var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
       var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
@@ -278,9 +279,9 @@ namespace antiplagiat_lab
             }
           }
 
-          string code = File.ReadAllText(openFileDialog.FileName);
+          string code = RemovePragmaRegions(File.ReadAllText(openFileDialog.FileName));
           report.CodeInfo = AnalyzeCode(code);
-          string relativePath = Path.Combine("Отчёты", selectedGroup, selectedStudent, "Code.txt");
+          string relativePath = Path.Combine("Отчёты", selectedGroup, selectedStudent, selectedNumUD, "Code.txt");
           _txtFilePath = relativePath;
           SerializationDataLabs();
           SaveData();
@@ -298,6 +299,31 @@ namespace antiplagiat_lab
           }
         }
       }
+    }
+
+    private string RemovePragmaRegions(string code)
+    {
+      var lines = code.Split('\n');
+      var result = new List<string>();
+      bool isRegion = false;
+      foreach (var line in lines)
+      {
+        if (line.TrimStart().StartsWith("#pragma region", StringComparison.OrdinalIgnoreCase))
+        {
+          isRegion = true;
+          continue;
+        }
+        if (line.TrimStart().StartsWith("#pragma endregion", StringComparison.OrdinalIgnoreCase))
+        {
+          isRegion = false;
+          continue;
+        }
+        if (!isRegion)
+        {
+          result.Add(line);
+        }
+      }
+      return string.Join("\n", result);
     }
 
     private void InformationVariableToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1048,24 +1074,24 @@ namespace antiplagiat_lab
       }
     }
 
-        #endregion
+    #endregion
 
-        private void verticalScrollBar_Scroll(object sender, ScrollEventArgs e)
-        {
+    private void verticalScrollBar_Scroll(object sender, ScrollEventArgs e)
+    {
 
-        }
-
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            string authors = "Авторы приложения Антиплагиат:\n\tСтуденты групп ИТ-123 и ПМИ-123\n\tКалинин Андрей Алексеевич\n\tЗеничева Эльмира Сергеевна\n\tПура Алексей Вячеславович\n\tРушев Алексей Михайлович";
-            string creationDate = "Дата создания: Май 2025 года";
-            string info = $"{authors}\n\n{creationDate}";
-
-            MessageBox.Show(info, "О приложении Антиплагиат");
-        }
     }
-    #region Class
-    public class Group
+
+    private void toolStripMenuItem1_Click(object sender, EventArgs e)
+    {
+      string authors = "Авторы приложения Антиплагиат:\n\tСтуденты групп ИТ-123 и ПМИ-123\n\tКалинин Андрей Алексеевич\n\tЗеничева Эльмира Сергеевна\n\tПура Алексей Вячеславович\n\tРушев Алексей Михайлович";
+      string creationDate = "Дата создания: Май 2025 года";
+      string info = $"{authors}\n\n{creationDate}";
+
+      MessageBox.Show(info, "О приложении Антиплагиат");
+    }
+  }
+  #region Class
+  public class Group
   {
     public string Name { get; set; }
     public List<Student> Students { get; set; } = new List<Student>();
