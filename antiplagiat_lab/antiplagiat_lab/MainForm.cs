@@ -18,10 +18,10 @@ namespace antiplagiat_lab
     private int selectedIndexNumberLab;
     private int selectedIndexGroup;
     private int selectedIndexStudent;
-    private static string _docxFilePath;
-    private static string _txtFilePath;
-    private static string _docxFileName;
-    private static long _ascii_code;
+    private string _docxFilePath;
+    private string _txtFilePath;
+    private string _docxFileName;
+    private long _ascii_code;
     private ReportData reportData;
     private string typeFile;
     public string checkCoincidenceFileCode;
@@ -145,6 +145,7 @@ namespace antiplagiat_lab
     {
       try
       {
+        int labNumber = Convert.ToInt32(numUD_NumberLab.Value);
         typeFile = "doc";
         if (comboBox_Group.SelectedItem != null && comboBox_Student.SelectedItem != null)
         {
@@ -160,7 +161,7 @@ namespace antiplagiat_lab
 
               if (group != null && student != null)
               {
-                string destPath = Path.Combine(ReportsDirectory, groupName, studentName);
+                string destPath = Path.Combine(ReportsDirectory, groupName, studentName, labNumber.ToString());
                 Directory.CreateDirectory(destPath);
 
                 // Очищаем комбобокс перед добавлением новых отчетов
@@ -170,9 +171,10 @@ namespace antiplagiat_lab
                 foreach (string filePath in openFileDialog.FileNames)
                 {
                   string destFile = Path.Combine(Environment.CurrentDirectory, destPath, Path.GetFileName(filePath));
-                  bool fileExists = student.Reports.Any(r => r.FileName == Path.GetFileName(filePath));
+                  //bool fileExists = student.Reports.Any(r => r.FileName == Path.GetFileName(filePath));
                   string fileName = Path.GetFileName(filePath);
                   string destFilePath = Path.Combine(destPath, fileName);
+                  bool fileExists = student.Reports.Any(r => r.FileName == fileName && r.FilePath.Contains(Path.Combine(groupName, studentName, labNumber.ToString())));
 
                   _docxFilePath = destFilePath;
                   _docxFileName = fileName;
@@ -363,7 +365,6 @@ namespace antiplagiat_lab
       numUD_NumberLab.Enabled = true;
       SetNumericUpDownEnabled(true);
     }
-
 
     private void comboBox_currentReport_SelectedIndexChanged(object sender, EventArgs e)
     {
@@ -609,14 +610,14 @@ namespace antiplagiat_lab
                 docxFilePath = !string.IsNullOrEmpty(existingJsonFile.DocxFilePath)
                   ? existingJsonFile.DocxFilePath.Contains(reportsFolder)
                   ? existingJsonFile.DocxFilePath.Substring(existingJsonFile.DocxFilePath.IndexOf(reportsFolder))
-                  : Path.Combine(reportsFolder, groupName, studentName, docxFileName ?? "Otchet.docx")
-                  : Path.Combine(reportsFolder, groupName, studentName, docxFileName ?? "Otchet.docx");
+                  : Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName ?? "Otchet.docx")
+                  : Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName ?? "Otchet.docx");
               }
             }
             if (string.IsNullOrEmpty(docxFileName))
             {
-              string docxPath = Path.Combine(reportsFolder, groupName, studentName, "Otchet.docx");
-              string docPath = Path.Combine(reportsFolder, groupName, studentName, "Otchet.doc");
+              string docxPath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), "Otchet.docx");
+              string docPath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), "Otchet.doc");
 
               if (File.Exists(docxPath))
               {
@@ -631,7 +632,7 @@ namespace antiplagiat_lab
               else
               {
                 docxFileName = "Otchet.docx";
-                docxFilePath = Path.Combine(reportsFolder, groupName, studentName, docxFileName);
+                docxFilePath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName);
               }
             }
 
