@@ -1,10 +1,11 @@
-﻿using Microsoft.Office.Interop.Word;
+﻿using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using Microsoft.Office.Interop.Word;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -146,94 +147,275 @@ namespace antiplagiat_lab
       try
       {
         int labNumber = Convert.ToInt32(numUD_NumberLab.Value);
-        typeFile = "doc";
-        if (comboBox_Group.SelectedItem != null && comboBox_Student.SelectedItem != null)
+        if (comboBox_Group.SelectedItem == null || comboBox_Student.SelectedItem == null)
         {
-          using (OpenFileDialog openFileDialog = new OpenFileDialog())
+          MessageBox.Show("Пожалуйста, выберите группу и студента.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+          return;
+        }
+
+        using (OpenFileDialog openFileDialog = new OpenFileDialog())
+        {
+          openFileDialog.Multiselect = false;
+          openFileDialog.Filter = "Документы (*.doc;*.docx;*.pdf)|*.doc;*.docx;*.pdf";
+
+          if (openFileDialog.ShowDialog() != DialogResult.OK)
+            return;
+
+          string filePath = openFileDialog.FileName;
+          string groupName = comboBox_Group.SelectedItem.ToString();
+          string studentName = comboBox_Student.SelectedItem.ToString();
+          var group = groups.FirstOrDefault(g => g.Name == groupName);
+          var student = group?.Students.FirstOrDefault(s => s.Name == studentName);
+
+          if (group == null || student == null)
           {
-            openFileDialog.Multiselect = true; // Включаем множественный выбор файлов
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            MessageBox.Show("Не удалось найти указанного студента в группе.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+          }
+
+          string reportsFullPath = System.IO.Path.GetFullPath(ReportsDirectory);
+          string destPath = System.IO.Path.Combine(reportsFullPath, groupName, studentName, labNumber.ToString());
+
+          try
+          {
+            Directory.CreateDirectory(destPath);
+          }
+          catch (Exception ex)
+          {
+            MessageBox.Show($"Не удалось создать директорию: {destPath}\nОшибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+          }
+
+          string extension = System.IO.Path.GetExtension(filePath).ToLower();
+          string fileName = System.IO.Path.GetFileName(filePath);
+          string destFilePath = System.IO.Path.Combine(destPath, fileName);
+
+          _docxFileName = fileName;
+          _docxFilePath = System.IO.Path.Combine(groupName, studentName, labNumber.ToString(), fileName);
+
+          switch (extension)
+          {
+            case ".pdf":
+              typeFile = "pdf";
+              break;
+            case ".doc":
+            case ".docx":
+              typeFile = "doc";
+              break;
+            default:
+              MessageBox.Show($"Формат файла {fileName} не поддерживается. Разрешены только .doc, .docx и .pdf",
+                            "Ошибка формата", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+              return;
+          }
+
+          try
+          {
+            if (File.Exists(destFilePath))
             {
-              string groupName = comboBox_Group.SelectedItem.ToString();
-              string studentName = comboBox_Student.SelectedItem.ToString();
-              var group = groups.FirstOrDefault(g => g.Name == groupName);
-              var student = group?.Students.FirstOrDefault(s => s.Name == studentName);
+              File.Delete(destFilePath);
+            }
 
-              if (group != null && student != null)
+            File.Copy(filePath, destFilePath);
+          }
+          catch (Exception ex)
+          {
+            MessageBox.Show($"Не удалось скопировать файл {fileName} в {destFilePath}\nОшибка: {ex.Message}",
+                          "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+          }
+
+          var existingReport = student.Reports.FirstOrDefault(r =>
+              r.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase) &&
+              r.LabNumber == labNumber);
+
+          if (existingReport != null)
+          {
+            var dialogResult = MessageBox.Show(
+                $"Отчет с таким названием уже существует.\n\n" +
+                $"Текущий файл: {existingReport.FileName}\n" +
+                $"Тип: {existingReport.FileType}\n" +
+                $"Размер: {existingReport.SymbolCount} символов, {existingReport.WordCount} слов\n" +
+                $"Хотите заменить его новым файлом?\n\n" +
+                $"Новый файл: {fileName}\n" +
+                $"Тип: {typeFile}",
+                "Заменить файл?",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (dialogResult != DialogResult.Yes)
+              return;
+
+            student.Reports.Remove(existingReport);
+          }
+
+          try
+          {
+            ReportData newReportData;
+
+            if (typeFile == "pdf")
+            {
+              newReportData = AnalyzePdfReport(destFilePath);
+            }
+            else
+            {
+              newReportData = AnalyzeReport(destFilePath);
+            }
+
+            newReportData.FileType = typeFile;
+            newReportData.LabNumber = labNumber;
+            newReportData.FileName = fileName;
+            newReportData.FilePath = System.IO.Path.Combine(groupName, studentName, labNumber.ToString(), fileName);
+            student.Reports.Add(newReportData);
+
+            comboBox_currentReport.Items.Clear();
+            comboBox_currentReport.Items.Add(fileName);
+            comboBox_currentReport.SelectedIndex = 0;
+          }
+          catch (Exception ex)
+          {
+            MessageBox.Show($"Не удалось проанализировать файл {fileName}\nОшибка: {ex.Message}",
+                          "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+          }
+
+          try
+          {
+            SaveData();
+            SerializationDataLabs();
+            MessageBox.Show("Файл успешно загружен!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+          }
+          catch (Exception ex)
+          {
+            MessageBox.Show($"Не удалось сохранить данные\nОшибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show($"Критическая ошибка: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
+    }
+
+    private ReportData AnalyzePdfReport(string filePath)
+    {
+      ReportData reportData = null;
+      const int targetDurationSeconds = 30;
+      DateTime startTime = DateTime.Now;
+      try
+      {
+        if (!File.Exists(filePath))
+        {
+          File.Delete(filePath);
+          throw new FileNotFoundException("Файл не найден.");
+        }
+        string extension = System.IO.Path.GetExtension(filePath).ToLower();
+        if (extension != ".pdf")
+        {
+          File.Delete(filePath);
+          throw new ArgumentException("Для PDF анализа поддерживается только формат .pdf");
+        }
+        long asciiSum = 0;
+        int wordCount = 0;
+        int symbolCount = 0;
+        StringBuilder fullText = new StringBuilder();
+        int totalSymbols = 0;
+        using (PdfReader reader = new PdfReader(filePath))
+        {
+          for (int i = 1; i <= reader.NumberOfPages; i++)
+          {
+            totalSymbols += PdfTextExtractor.GetTextFromPage(reader, i).Length;
+          }
+        }
+        progressBar.Invoke((MethodInvoker)(() =>
+        {
+          progressBar.Visible = true;
+          progressBar.Minimum = 0;
+          progressBar.Maximum = totalSymbols;
+          progressBar.Value = 0;
+        }));
+        using (PdfReader reader = new PdfReader(filePath))
+        {
+          int processedSymbols = 0;
+          int lastUpdate = 0;
+          int updateInterval = Math.Max(1, totalSymbols / 100);
+          for (int i = 1; i <= reader.NumberOfPages; i++)
+          {
+            string pageText = PdfTextExtractor.GetTextFromPage(reader, i);
+            fullText.Append(pageText);
+            foreach (char currentChar in pageText)
+            {
+              int asciiCode = currentChar;
+              if (asciiCode >= 0 && asciiCode <= 127)
               {
-                string destPath = Path.Combine(ReportsDirectory, groupName, studentName, labNumber.ToString());
-                Directory.CreateDirectory(destPath);
+                asciiSum += asciiCode;
+              }
+              else
+              {
+                byte[] tmp = Encoding.GetEncoding(1251).GetBytes(new[] { currentChar });
+                foreach (var b in tmp) asciiSum += b;
+              }
+              processedSymbols++;
+              if (processedSymbols - lastUpdate >= updateInterval || processedSymbols == totalSymbols)
+              {
+                TimeSpan elapsed = DateTime.Now - startTime;
+                double targetTotalMilliseconds = targetDurationSeconds * 1000;
+                double remainingMilliseconds = targetTotalMilliseconds - elapsed.TotalMilliseconds;
 
-                // Очищаем комбобокс перед добавлением новых отчетов
-                comboBox_currentReport.Items.Clear();
-
-                // Обрабатываем все выбранные файлы
-                foreach (string filePath in openFileDialog.FileNames)
+                if (remainingMilliseconds > 0)
                 {
-                  string destFile = Path.Combine(Environment.CurrentDirectory, destPath, Path.GetFileName(filePath));
-                  //bool fileExists = student.Reports.Any(r => r.FileName == Path.GetFileName(filePath));
-                  string fileName = Path.GetFileName(filePath);
-                  string destFilePath = Path.Combine(destPath, fileName);
-                  bool fileExists = student.Reports.Any(r => r.FileName == fileName && r.FilePath.Contains(Path.Combine(groupName, studentName, labNumber.ToString())));
-
-                  _docxFilePath = destFilePath;
-                  _docxFileName = fileName;
-
-                  if (fileExists)
+                  int delayPerUpdate = (int)(remainingMilliseconds / (totalSymbols / updateInterval));
+                  if (delayPerUpdate > 0)
                   {
-                    var existingReport = student.Reports.First(r => r.FileName == Path.GetFileName(filePath));
-
-                    var dialogResult = MessageBox.Show(
-                        $"Отчет с таким названием уже существует.\n\n" +
-                        $"Текущий файл: {existingReport.FileName}\n" +
-                        $"Размер: {existingReport.SymbolCount} символов, {existingReport.WordCount} слов\n" +
-                        $"Хотите заменить его новым файлом?\n\n" +
-                        $"Новый файл: {Path.GetFileName(filePath)}",
-                        "Заменить файл?",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question
-                    );
-
-                    if (dialogResult == DialogResult.Yes)
-                    {
-                      student.Reports.Remove(existingReport);
-                      File.Copy(filePath, destFile, true);
-                      var newReportData = AnalyzeReport(destFile);
-                      student.Reports.Add(newReportData);
-                      comboBox_currentReport.Items.Add(newReportData.FileName);
-                    }
-                  }
-                  else
-                  {
-                    File.Copy(filePath, destFile, true);
-                    var newReportData = AnalyzeReport(destFile);
-                    student.Reports.Add(newReportData);
-                    comboBox_currentReport.Items.Add(newReportData.FileName);
+                    System.Threading.Thread.Sleep(delayPerUpdate);
                   }
                 }
-
-                // Сохраняем данные после обработки всех файлов
-                SaveData();
-
-                // Выбираем последний добавленный отчет
-                if (comboBox_currentReport.Items.Count > 0)
+                progressBar.Invoke((MethodInvoker)(() =>
                 {
-                  comboBox_currentReport.SelectedIndex = comboBox_currentReport.Items.Count - 1;
-                }
+                  progressBar.Value = processedSymbols;
+                  progressBar.Update();
+                }));
+                lastUpdate = processedSymbols;
               }
             }
           }
         }
-        else
+        symbolCount = fullText.Length;
+        wordCount = fullText.ToString().Split(new[] { ' ', '\t', '\n', '\r' },
+                    StringSplitOptions.RemoveEmptyEntries).Length;
+        this.Invoke((MethodInvoker)(() =>
         {
-          MessageBox.Show("Пожалуйста, выберите группу и студента.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-        SerializationDataLabs();
+          label_CountWords.Text = wordCount.ToString();
+          label_CountSymbol.Text = symbolCount.ToString();
+          label_SummASCII.Text = asciiSum.ToString();
+          _ascii_code = asciiSum;
+        }));
+        reportData = new ReportData
+        {
+          FileName = System.IO.Path.GetFileName(filePath),
+          FilePath = filePath,
+          WordCount = wordCount,
+          SymbolCount = symbolCount,
+          AsciiSum = asciiSum,
+          FileType = "pdf"
+        };
       }
       catch (Exception ex)
       {
-        MessageBox.Show($"{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        this.Invoke((MethodInvoker)(() =>
+        {
+          MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }));
       }
+      finally
+      {
+        this.Invoke((MethodInvoker)(() =>
+        {
+          progressBar.Visible = false;
+          progressBar.Value = 0;
+        }));
+      }
+      return reportData;
     }
 
     private void addCode_Click(object sender, EventArgs e)
@@ -249,7 +431,7 @@ namespace antiplagiat_lab
       string selectedStudent = comboBox_Student.SelectedItem.ToString();
       string selectedReport = comboBox_currentReport.SelectedItem.ToString();
       string selectedNumUD = numUD_NumberLab.Value.ToString();
-         
+
       var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
       var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
       var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
@@ -276,23 +458,26 @@ namespace antiplagiat_lab
 
             if (dialogResult == DialogResult.No)
             {
-              _txtFilePath = Path.GetFullPath(openFileDialog.FileName);
               return;
             }
           }
 
+          LoadCurrentDocxValues(selectedGroup, selectedStudent, selectedNumUD);
+
           string code = RemovePragmaRegions(File.ReadAllText(openFileDialog.FileName));
           report.CodeInfo = AnalyzeCode(code);
-          string relativePath = Path.Combine("Отчёты", selectedGroup, selectedStudent, selectedNumUD, "Code.txt");
-          _txtFilePath = relativePath;
+
+          _txtFilePath = System.IO.Path.Combine(ReportsDirectory, selectedGroup, selectedStudent, selectedNumUD, "Code.txt");
+
           SerializationDataLabs();
           SaveData();
           DisplayCodeInfo(report.CodeInfo);
+
           try
           {
-            string targetDir = Path.Combine("Отчёты", selectedGroup, selectedStudent);
+            string targetDir = System.IO.Path.Combine(ReportsDirectory, selectedGroup, selectedStudent, selectedNumUD);
             Directory.CreateDirectory(targetDir);
-            string targetPath = Path.Combine(targetDir, "Code.txt");
+            string targetPath = System.IO.Path.Combine(targetDir, "Code.txt");
             File.Copy(openFileDialog.FileName, targetPath, true);
           }
           catch (Exception ex)
@@ -301,6 +486,40 @@ namespace antiplagiat_lab
           }
         }
       }
+    }
+
+    private void LoadCurrentDocxValues(string groupName, string studentName, string labNumber)
+    {
+      try
+      {
+        string jsonPath = "dataCheckLabs.json";
+        if (File.Exists(jsonPath))
+        {
+          string jsonData = File.ReadAllText(jsonPath);
+          RootObject root = JsonConvert.DeserializeObject<RootObject>(jsonData);
+
+          if (root.Groups.ContainsKey(groupName))
+          {
+            string labKey = $"Labs_{labNumber}";
+            if (root.Groups[groupName].Fields.ContainsKey(labKey))
+            {
+              var labFiles = root.Groups[groupName].Fields[labKey].Files;
+              var existingFile = labFiles.FirstOrDefault(f => f.StudentName == studentName);
+
+              if (existingFile != null)
+              {
+                _docxFileName = existingFile.DocxFileName;
+                _docxFilePath = existingFile.DocxFilePath;
+                return;
+              }
+            }
+          }
+        }
+      }
+      catch { }
+
+      _docxFileName = null;
+      _docxFilePath = null;
     }
 
     private string RemovePragmaRegions(string code)
@@ -370,11 +589,7 @@ namespace antiplagiat_lab
     {
       if (comboBox_currentReport.SelectedItem == null)
       {
-        label_CountWords.Text = "       ";
-        label_CountSymbol.Text = "       ";
-        label_SummASCII.Text = "       ";
-        dataGridView_Coincidence.Rows.Clear();
-        DisplayCodeInfo(null);
+        ClearReportInfo();
         return;
       }
 
@@ -389,18 +604,36 @@ namespace antiplagiat_lab
 
       var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
       var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
+
       var report = student?.Reports.FirstOrDefault(r => r.FileName == selectedReport);
 
       if (report != null)
       {
-        label_CountWords.Text = $"{report.WordCount}";
-        label_CountSymbol.Text = $"{report.SymbolCount}";
-        label_SummASCII.Text = $"{report.AsciiSum}";
-        DisplayCodeInfo(report.CodeInfo);
-        FillDataGridView(report.AsciiSum, report.FilePath);
+        UpdateReportInfo(report);
+      }
+      else
+      {
+        ClearReportInfo();
       }
     }
 
+    private void ClearReportInfo()
+    {
+      label_CountWords.Text = "       ";
+      label_CountSymbol.Text = "       ";
+      label_SummASCII.Text = "       ";
+      dataGridView_Coincidence.Rows.Clear();
+      DisplayCodeInfo(null);
+    }
+
+    private void UpdateReportInfo(ReportData report)
+    {
+      label_CountWords.Text = $"{report.WordCount}";
+      label_CountSymbol.Text = $"{report.SymbolCount}";
+      label_SummASCII.Text = $"{report.AsciiSum}";
+      DisplayCodeInfo(report.CodeInfo);
+      FillDataGridView(report.AsciiSum, report.FilePath);
+    }
 
     private void SetNumericUpDownEnabled(bool isEnabled)
     {
@@ -456,8 +689,9 @@ namespace antiplagiat_lab
           root.Groups = new Dictionary<string, GroupData>
           {
             ["ПМИ"] = new GroupData(),
-            ["МКН"] = new GroupData(),
-            ["АИС"] = new GroupData()
+            ["ИТ"] = new GroupData(),
+            ["АИС"] = new GroupData(),
+            ["МКН"] = new GroupData()
           };
         }
         int labNumber = Convert.ToInt32(numUD_NumberLab.Value);
@@ -485,29 +719,64 @@ namespace antiplagiat_lab
           switch (typeFile)
           {
             case "doc":
-              var firstDialogResult = MessageBox.Show(
+              var firstDialogResultDocx = MessageBox.Show(
               $"Студент {studentName} уже существует в работе {labNumber}\n" +
               $"Добавление в базу данных проверок невозможно.",
               "Ошибка",
               MessageBoxButtons.OKCancel,
               MessageBoxIcon.Error);
 
-              if (firstDialogResult == DialogResult.OK)
+              if (firstDialogResultDocx == DialogResult.OK)
               {
-                var secondDialogResult = MessageBox.Show(
+                var secondDialogResultDocx = MessageBox.Show(
                     $"Хотите пересоздать данные о студенте {studentName} в группе {groupName}?",
                     "Выберите действие",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
 
-                if (secondDialogResult == DialogResult.Yes)
+                if (secondDialogResultDocx == DialogResult.Yes)
                 {
                   foreach (var file in existingStudentFiles)
                   {
                     currentLab.Files.Remove(file);
                   }
-                  string _jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
-                  File.WriteAllText(filePath, _jsonString);
+                  string jsonStringDocx = JsonConvert.SerializeObject(root, Formatting.Indented);
+                  File.WriteAllText(filePath, jsonStringDocx);
+                }
+                else
+                {
+                  return;
+                }
+              }
+              else
+              {
+                return;
+              }
+              break;
+            case "pdf":
+              var firstDialogResultPdf = MessageBox.Show(
+              $"Студент {studentName} уже существует в работе {labNumber}\n" +
+              $"Добавление в базу данных проверок невозможно.",
+              "Ошибка",
+              MessageBoxButtons.OKCancel,
+              MessageBoxIcon.Error);
+
+              if (firstDialogResultPdf == DialogResult.OK)
+              {
+                var secondDialogResultPdf = MessageBox.Show(
+                    $"Хотите пересоздать данные о студенте {studentName} в группе {groupName}?",
+                    "Выберите действие",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (secondDialogResultPdf == DialogResult.Yes)
+                {
+                  foreach (var file in existingStudentFiles)
+                  {
+                    currentLab.Files.Remove(file);
+                  }
+                  string jsonStringPdf = JsonConvert.SerializeObject(root, Formatting.Indented);
+                  File.WriteAllText(filePath, jsonStringPdf);
                 }
                 else
                 {
@@ -520,29 +789,29 @@ namespace antiplagiat_lab
               }
               break;
             case "text":
-              var _firstDialogResult = MessageBox.Show(
+              var firstDialogResultTxt = MessageBox.Show(
               $"Файл исходного кода у студента {studentName} уже существует в работе {labNumber}\n" +
               $"Добавление в базу данных проверок невозможно.",
               "Ошибка",
               MessageBoxButtons.OKCancel,
               MessageBoxIcon.Error);
 
-              if (_firstDialogResult == DialogResult.OK)
+              if (firstDialogResultTxt == DialogResult.OK)
               {
-                var _secondDialogResult = MessageBox.Show(
+                var secondDialogResultTxt = MessageBox.Show(
                     $"Хотите пересоздать данные о файле исходного кода студента {studentName} в группе {groupName}?",
                     "Выберите действие",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
 
-                if (_secondDialogResult == DialogResult.Yes)
+                if (secondDialogResultTxt == DialogResult.Yes)
                 {
                   foreach (var file in existingStudentFiles)
                   {
                     currentLab.Files.Remove(file);
                   }
-                  string __jsonString = JsonConvert.SerializeObject(root, Formatting.Indented);
-                  File.WriteAllText(filePath, __jsonString);
+                  string jsonStringTxt = JsonConvert.SerializeObject(root, Formatting.Indented);
+                  File.WriteAllText(filePath, jsonStringTxt);
                 }
                 else
                 {
@@ -557,7 +826,6 @@ namespace antiplagiat_lab
             default: break;
           }
         }
-
         switch (typeFile)
         {
           case "doc":
@@ -570,97 +838,61 @@ namespace antiplagiat_lab
               TxtFilePath = null,
               ASCII_Code = _ascii_code
             });
-            if (_docxFileName != "Otchet.docx" || _docxFileName != "Otchet.docx")
+            break;
+          case "pdf":
+            currentLab.Files.Add(new LabFile
             {
-              throw new FormatException($"Загруженный файл имеет некорректное название. Исправьте на 'Otchet'!\n" +
-                $"Не исправив название, будет невозможно проверить исходный код данного студента.");
-            }
+              Id = Guid.NewGuid().ToString(),
+              StudentName = comboBox_Student.Text,
+              DocxFileName = _docxFileName,
+              DocxFilePath = _docxFilePath,
+              TxtFilePath = null,
+              ASCII_Code = _ascii_code
+            });
             break;
           case "text":
             const string jsonFilePath = "dataCheckLabs.json";
             var jsonData = File.Exists(jsonFilePath)
                 ? JsonConvert.DeserializeObject<RootObject>(File.ReadAllText(jsonFilePath))
                 : new RootObject();
-            string _groupName = comboBox_Group.Text;
-            string labName = $"Labs_{labNumber}";
-            string reportsFolder = "Отчёты";
+
             if (!jsonData.Groups.ContainsKey(groupName))
             {
               jsonData.Groups[groupName] = new GroupData { Fields = new Dictionary<string, LabData>() };
             }
+
+            string labName = $"Labs_{labNumber}";
             if (!jsonData.Groups[groupName].Fields.ContainsKey(labName))
             {
               jsonData.Groups[groupName].Fields[labName] = new LabData { Files = new List<LabFile>() };
             }
+
             var lab = jsonData.Groups[groupName].Fields[labName];
-            var existingJsonFile = lab.Files.Find(f => string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
-            string docxFileName = null;
-            string docxFilePath = null;
-
-            if (existingJsonFile != null)
+            var existingJsonFile = lab.Files.FirstOrDefault(f =>
+                string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
+            string reportFileName = comboBox_currentReport.SelectedItem?.ToString();
+            string docxFileName = existingJsonFile?.DocxFileName;
+            string docxFilePath = existingJsonFile?.DocxFilePath;
+            if (string.IsNullOrEmpty(docxFileName) && !string.IsNullOrEmpty(reportFileName))
             {
-              if (!string.IsNullOrEmpty(existingJsonFile.DocxFileName))
+              string studentFolder = System.IO.Path.Combine(ReportsDirectory, groupName, studentName, labNumber.ToString());
+              if (Directory.Exists(studentFolder))
               {
-                docxFileName = existingJsonFile.DocxFileName;
-                if (!docxFileName.Equals("Otchet.docx", StringComparison.OrdinalIgnoreCase) &&
-                    !docxFileName.Equals("Otchet.doc", StringComparison.OrdinalIgnoreCase))
+                string fullPath = System.IO.Path.Combine(studentFolder, reportFileName);
+                if (File.Exists(fullPath))
                 {
-                  throw new FormatException("Название файла должно быть 'Otchet.docx' или 'Otchet.doc'");
+                  docxFileName = reportFileName;
+                  docxFilePath = System.IO.Path.Combine(groupName, studentName, labNumber.ToString(), reportFileName);
                 }
-                docxFilePath = !string.IsNullOrEmpty(existingJsonFile.DocxFilePath)
-                  ? existingJsonFile.DocxFilePath.Contains(reportsFolder)
-                  ? existingJsonFile.DocxFilePath.Substring(existingJsonFile.DocxFilePath.IndexOf(reportsFolder))
-                  : Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName ?? "Otchet.docx")
-                  : Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName ?? "Otchet.docx");
-              }
-            }
-            if (string.IsNullOrEmpty(docxFileName))
-            {
-              string docxPath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), "Otchet.docx");
-              string docPath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), "Otchet.doc");
-
-              if (File.Exists(docxPath))
-              {
-                docxFileName = "Otchet.docx";
-                docxFilePath = docxPath;
-              }
-              else if (File.Exists(docPath))
-              {
-                docxFileName = "Otchet.doc";
-                docxFilePath = docPath;
-              }
-              else
-              {
-                docxFileName = "Otchet.docx";
-                docxFilePath = Path.Combine(reportsFolder, groupName, studentName, labNumber.ToString(), docxFileName);
               }
             }
 
-            long asciiCode = 0;
-            bool asciiCodeValid = false;
-
-            if (!string.IsNullOrWhiteSpace(label_SummASCII.Text))
-            {
-              string cleanAscii = new string(label_SummASCII.Text.Where(c => char.IsDigit(c)).ToArray());
-
-              if (!string.IsNullOrEmpty(cleanAscii) && long.TryParse(cleanAscii, out long parsedAscii))
-              {
-                asciiCode = parsedAscii;
-                asciiCodeValid = true;
-              }
-            }
-            if (!asciiCodeValid && existingJsonFile != null)
-            {
-              asciiCode = existingJsonFile.ASCII_Code;
-            }
-            var existingFile = currentLab.Files.Find(f => string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
+            var existingFile = currentLab.Files.FirstOrDefault(f =>
+                string.Equals(f.StudentName, studentName, StringComparison.Ordinal));
 
             if (existingFile != null)
             {
               existingFile.TxtFilePath = _txtFilePath;
-              existingFile.DocxFileName = docxFileName;
-              existingFile.DocxFilePath = docxFilePath;
-              existingFile.ASCII_Code = asciiCode;
             }
             else
             {
@@ -671,7 +903,7 @@ namespace antiplagiat_lab
                 TxtFilePath = _txtFilePath,
                 DocxFileName = docxFileName,
                 DocxFilePath = docxFilePath,
-                ASCII_Code = asciiCode
+                ASCII_Code = Convert.ToInt64(label_SummASCII.Text)
               };
 
               currentLab.Files.Add(newFile);
@@ -685,6 +917,7 @@ namespace antiplagiat_lab
                 ASCII_Code = newFile.ASCII_Code
               });
             }
+
             File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(jsonData, Formatting.Indented));
             break;
           default: break;
@@ -726,16 +959,16 @@ namespace antiplagiat_lab
           File.Delete(filePath);
           throw new FileNotFoundException("Файл не найден.");
         }
-        if (Path.GetExtension(filePath) == ".doc" || Path.GetExtension(filePath) == ".docx")
+        if (System.IO.Path.GetExtension(filePath) == ".doc" || System.IO.Path.GetExtension(filePath) == ".docx")
         {
           MessageBox.Show($"Формат файла выбран верно");
         }
-        else if (Path.GetExtension(filePath) != ".docx")
+        else if (System.IO.Path.GetExtension(filePath) != ".docx")
         {
           File.Delete(filePath);
           throw new ArgumentException("Поддерживаются только форматы .doc или .docx");
         }
-        else if (Path.GetExtension(filePath) != ".doc")
+        else if (System.IO.Path.GetExtension(filePath) != ".doc")
         {
           File.Delete(filePath);
           throw new ArgumentException("Поддерживаются только форматы .doc или .docx");
@@ -782,7 +1015,7 @@ namespace antiplagiat_lab
           _ascii_code = asciiSum;
           reportData = new ReportData
           {
-            FileName = Path.GetFileName(filePath),
+            FileName = System.IO.Path.GetFileName(filePath),
             FilePath = filePath,
             WordCount = wordCount,
             SymbolCount = symbolCount,
@@ -824,7 +1057,7 @@ namespace antiplagiat_lab
 
     private void DisplayCodeInfo(CodeAnalysis codeInfo)
     {
-      string studentCodePath = Path.Combine("Отчёты", comboBox_Group.Text, comboBox_Student.Text, "Code.txt");
+      string studentCodePath = System.IO.Path.Combine(ReportsDirectory, comboBox_Group.Text, comboBox_Student.Text, numUD_NumberLab.Value.ToString(), "Code.txt");
       if (codeInfo == null)
       {
         label_countFOR.Text = "       ";
@@ -953,24 +1186,69 @@ namespace antiplagiat_lab
         }
       }
     }
+
     private void UpdateReportList()
     {
       string selectedStudent = comboBox_Student.SelectedItem?.ToString();
       comboBox_currentReport.Items.Clear();
+
       if (selectedStudent != null)
       {
         var selectedGroup = comboBox_Group.SelectedItem?.ToString();
         var group = groups.FirstOrDefault(g => g.Name == selectedGroup);
         var student = group?.Students.FirstOrDefault(s => s.Name == selectedStudent);
 
-        if (student != null && student.Reports.Any())
+        if (student != null)
         {
-          foreach (var report in student.Reports)
+          var jsonData = LoadCheckLabsData();
+
+          if (jsonData != null && jsonData.Groups.ContainsKey(selectedGroup))
           {
-            comboBox_currentReport.Items.Add(report.FileName);
+            int currentLabNumber = (int)numUD_NumberLab.Value;
+            string labKey = $"Labs_{currentLabNumber}";
+
+            if (jsonData.Groups[selectedGroup].Fields.ContainsKey(labKey))
+            {
+              var studentFiles = jsonData.Groups[selectedGroup].Fields[labKey].Files
+                  .Where(f => f.StudentName == selectedStudent)
+                  .ToList();
+
+              foreach (var file in studentFiles)
+              {
+                if (student.Reports.Any(r => r.FileName == file.DocxFileName))
+                {
+                  comboBox_currentReport.Items.Add(file.DocxFileName);
+                }
+              }
+            }
+          }
+
+          if (comboBox_currentReport.Items.Count == 0 && student.Reports.Any())
+          {
+            foreach (var report in student.Reports)
+            {
+              comboBox_currentReport.Items.Add(report.FileName);
+            }
           }
         }
       }
+    }
+
+    private RootObject LoadCheckLabsData()
+    {
+      try
+      {
+        string jsonPath = "dataCheckLabs.json";
+        if (File.Exists(jsonPath))
+        {
+          string json = File.ReadAllText(jsonPath);
+          return JsonConvert.DeserializeObject<RootObject>(json);
+        }
+      }
+      catch
+      {
+      }
+      return null;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -1075,14 +1353,7 @@ namespace antiplagiat_lab
       }
     }
 
-    #endregion
-
-    private void verticalScrollBar_Scroll(object sender, ScrollEventArgs e)
-    {
-
-    }
-
-    private void toolStripMenuItem1_Click(object sender, EventArgs e)
+    private void InformationApp_ToolStripMenuItem_Click(object sender, EventArgs e)
     {
       string authors = "Авторы приложения Антиплагиат:\n\tСтуденты групп ИТ-123 и ПМИ-123\n\tКалинин Андрей Алексеевич\n\tЗеничева Эльмира Сергеевна\n\tПура Алексей Вячеславович\n\tРушев Алексей Михайлович";
       string creationDate = "Дата создания: Май 2025 года";
@@ -1090,7 +1361,11 @@ namespace antiplagiat_lab
 
       MessageBox.Show(info, "О приложении Антиплагиат");
     }
+
+    #endregion
+
   }
+
   #region Class
   public class Group
   {
@@ -1112,6 +1387,8 @@ namespace antiplagiat_lab
     public int SymbolCount { get; set; }
     public long AsciiSum { get; set; }
     public CodeAnalysis CodeInfo { get; set; } = null;
+    public string FileType { get; set; }
+    public int LabNumber { get; set; }
   }
 
   public class CodeAnalysis
